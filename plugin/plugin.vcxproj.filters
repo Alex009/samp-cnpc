@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\SDK">
+      <UniqueIdentifier>{63b73d73-b992-4a0a-95e5-36027a2f5fd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SDK\amx">
+      <UniqueIdentifier>{c0b00f95-47b4-4ff6-87ae-469b44a6ff3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\SDK">
+      <UniqueIdentifier>{0eaea2f4-cc40-474a-b478-59b2b98723fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\SDK\amx">
+      <UniqueIdentifier>{a40d504f-3b7b-43c7-8cd1-49fc96db508b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\SAMP">
+      <UniqueIdentifier>{e5e862a1-5632-46b5-8bed-2d28c1b9b4d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utils">
+      <UniqueIdentifier>{4e99dfd3-565f-42cd-b860-3a7a83be4950}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{7e2d4090-16b9-4e72-896f-9d52b336746c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules">
+      <UniqueIdentifier>{492e6a94-8842-41c7-af17-1b80957cf942}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="callbacks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CNPC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="natives.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="threads.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\amxplugin.cpp">
+      <Filter>Source Files\SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="SDK\amx\getch.c">
+      <Filter>Source Files\SDK\amx</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\quaternion.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\3DVector.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="static_data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\009%27s files\C++ projects\Controllable NPC SA-MP 0.3.1\plugin\modules\nodes.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="callbacks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CNPC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="natives.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="os.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="threads.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\plugin.h">
+      <Filter>Header Files\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\plugincommon.h">
+      <Filter>Header Files\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\amx\amx.h">
+      <Filter>Header Files\SDK\amx</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\amx\getch.h">
+      <Filter>Header Files\SDK\amx</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\amx\sclinux.h">
+      <Filter>Header Files\SDK\amx</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMP\CPlayer.h">
+      <Filter>Header Files\SAMP</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMP\CPlayers.h">
+      <Filter>Header Files\SAMP</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMP\CSAMP.h">
+      <Filter>Header Files\SAMP</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMP\CVehicle.h">
+      <Filter>Header Files\SAMP</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMP\CVehicles.h">
+      <Filter>Header Files\SAMP</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMP\defines.h">
+      <Filter>Header Files\SAMP</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMP\packets.h">
+      <Filter>Header Files\SAMP</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\quaternion.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\3DVector.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMP\address.h">
+      <Filter>Header Files\SAMP</Filter>
+    </ClInclude>
+    <ClInclude Include="Nodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NodesStructs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
