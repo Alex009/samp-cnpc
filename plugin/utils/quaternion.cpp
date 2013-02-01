@@ -5,9 +5,11 @@
 
 #define _USE_MATH_DEFINES
 
-#include "quaternion.h"
 #include <math.h>
 #include <stdio.h>
+
+#include "quaternion.h"
+#include "3DVector.h"
 
 float clamp(float X,float min,float max);
 
@@ -150,6 +152,62 @@ void Quaternion::ToEuler(float * euler)
     euler[0] = atan2f(2.f * Y*W - 2.f * X*Z, sqx - sqy - sqz + sqw);
     euler[2] = -asinf(2.f * test/unit);
     euler[1] = atan2f(2.f * X*W - 2.f * Y*Z, -sqx + sqy - sqz + sqw);
+}
+
+void Quaternion::FromVector(float vX,float vY,float vZ)
+{
+	float euler[3];
+	C3DVector vec(vX,vY,vZ);
+	vec.ToEuler(euler);
+	euler[2] -= (90.f * (float)(M_PI / 180.f)); // gta fix
+	for(int i = 0;i < 3;i++) euler[i] = (360.f * (float)(M_PI / 180.f)) - euler[i]; // gta fix
+	FromAxisAngle(0.0,0.0,1.0,euler[2]);
+	Quaternion quat;
+	quat.FromAxisAngle(1.0,0.0,0.0,euler[0]);
+	Multiply(quat);
+
+
+	/*
+Vector3 v0(0, 0, 1); // направление модели. 
+Vector3 v1(0.7, 0.7, 0); // текущее направление
+
+Real d = v0.dotProduct(v1); 
+Real s = Math::Sqrt( (1+d)*2 ); 
+Real invs = 1 / s; 
+Vector3 c = v0.crossProduct(v1);
+
+Quaternion q; 
+q.x = c.x * invs; 
+q.y = c.y * invs; 
+q.z = c.z * invs; 
+q.w = s * 0.5f; 
+q.normalise(); 
+return q; // результат.
+
+Я опустил проверки на крайние случаи (0 и 180 градусов). 
+Real = float.
+	// get quaternion
+	C3DVector vec(moving_vector[0],moving_vector[1],moving_vector[2]);
+	vec.ToEuler(euler);
+	euler[2] -= (90.f * (float)(M_PI / 180.f)); // gta fix
+	for(int i = 0;i < 3;i++) euler[i] = (360.f * (float)(M_PI / 180.f)) - euler[i]; // gta fix
+	q1.FromAxisAngle(0.0,0.0,1.0,euler[2]);
+	q2.FromAxisAngle(1.0,0.0,0.0,euler[0]);
+	q1.Multiply(q2);
+	SetQuaternion(q1.X,q1.Y,q1.Z,q1.W);
+	// get real speed
+	moving_speed = step / 1200;
+	// now speed = 1.0 per 50 ms
+	// we need speed per 1 min
+	// 1 min = 60 sec = 60_000 ms
+	// now speed 1.0 per 1/1200 min
+	// find new speed: (step / 1200) * v* ? try...
+	// get current speed vector
+	moving_vector[0] *= moving_speed;
+	moving_vector[1] *= moving_speed;
+	moving_vector[2] *= moving_speed;
+	// velocity
+	*/
 }
 
 void Quaternion::Multiply(Quaternion a)

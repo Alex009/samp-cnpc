@@ -13,60 +13,30 @@
 #include "SDK/amx/amx.h"
 #include "SDK/plugincommon.h"
 // plugin
-#include "CNPC.h"
-#include "Nodes.h"
-#include "hooks.h"
-#include "callbacks.h"
 #include "SAMP/CSAMP.h"
+#include "CNPC.h"
+#include "CNode.h"
+#include "CNodeManager.h"
+#include "CNodePath.h"
+#include "CZMap.h"
+#include "hooks.h"
 #include "defines.h"
-// debug
-#include "utils/quaternion.h"
+#include "utils/utils.h"
+#include "utils/time.h"
+#include "path_calc.h"
 
-extern	CNPC*		pNPC[MAX_NPCS];
-extern	CNode*		Nodes[MAX_NODES];
-extern	CSAMP*		pSaMp;
-extern	CHooks*		pHooks;
-extern	CCallbacks*	pCallbacks;
-extern	char		VisualDeath;
-extern	int			WeaponReload[MAX_PLAYERS];
-extern	float		WeaponsDamage[MAX_WEAPONS + 2];
-extern	int			WeaponsReloadTime[MAX_WEAPONS + 1];
-// for nodes module
-#define MAX_VEHICLE_NODES_TO_LOAD	31000
-#define MAX_VEHICLE_NODES_IN_FILE	1000
-#define MAX_PED_NODES_TO_LOAD		38000
-#define MAX_PED_NODES_IN_FILE		2500
-#define INVALID_NODE_ID				-1
-// типы путей
-#define VEHICLE_NODES				1
-#define PED_NODES					2
-
-struct NodeInfo						// данные каждой точки навигационного графа
-{
-	float			ni_pos[3];		// позиция	
-	unsigned char	ni_areaid;		// номер квадрата точки
-	unsigned short	ni_nodeid;		// номер точки в квадрате
-	unsigned short*	ni_links;		// связи
-	float*			ni_links_dist;	// расстояние от точки до её связей
-	unsigned char	ni_linkcount;	// количество связей
-};
-NodeInfo		node_vehicle[MAX_VEHICLE_NODES_TO_LOAD];			// массив точек транспортного навигационного графа
-unsigned short	node_vehicle_link[64][MAX_VEHICLE_NODES_IN_FILE];	// массив ссылок точек в файлах путей (64), на точки в общем массиве транспортного навигационного графа
-unsigned short	node_vehicle_count;									// количество загруженных точек транспортного навигационного графа
-NodeInfo		node_ped[MAX_PED_NODES_TO_LOAD];					// массив точек пешеходного навигационного графа
-unsigned short	node_ped_link[64][MAX_PED_NODES_IN_FILE];			// массив ссылок точек в файлах путей (64), на точки в общем массиве пешеходного навигационного графа
-unsigned short	node_ped_count;										// количество загруженных точек пешеходного навигационного графа
-// for dijkstra module
-struct dijkstra_NodeInfo
-{
-	float			ni_dist;		// расстояние от начала пути
-	unsigned short	ni_parentid;	// номер точки из которой пришли сюда самым коротким путём от начала пути
-	unsigned short	ni_step;		// шаг от начала пути
-};
-dijkstra_NodeInfo	node_vehicle[MAX_VEHICLE_NODES_TO_LOAD];		// массив данных точек для поиска пути
-bool				node_vehicle_check[MAX_VEHICLE_NODES_TO_LOAD];	// массив флагов проверена ли точка (для поиска пути)
-dijkstra_NodeInfo	node_ped[MAX_PED_NODES_TO_LOAD];				// массив данных точек для поиска пути	
-bool				node_ped_check[MAX_PED_NODES_TO_LOAD];			// массив флагов проверена ли точка (для поиска пути)
+extern	CNPC*			pNPC[MAX_NPCS];
+extern	CNode*			pNodes[MAX_NODES];
+extern	CNodeManager*	pNodeManager;
+extern	CNodePath*		pNodePaths[MAX_NODE_PATHS];
+extern	CZMap*			pZMap;
+extern	CSAMP*			pSaMp;
+extern	CHooks*			pHooks;
+extern	char			VisualDeath;
+extern	unsigned short	MaxPlayers;
+extern	int				WeaponReload[MAX_PLAYERS];
+extern	float			WeaponsDamage[MAX_WEAPONS + 2];
+extern	int				WeaponsReloadTime[MAX_WEAPONS + 1];
 
 // CreateNPC(NPC:npcid,npcname[]);
 static cell AMX_NATIVE_CALL n_CreateNPC( AMX* amx, cell* params )
@@ -88,7 +58,7 @@ static cell AMX_NATIVE_CALL n_DestroyNPC( AMX* amx, cell* params )
 	if(pNPC[npcid])
 	{
 		delete pNPC[npcid];
-		pNPC[npcid] = 0;
+		pNPC[npcid] = NULL;
 		return 1;
 	}
 	return 0;
@@ -251,8 +221,9 @@ static cell AMX_NATIVE_CALL n_NPC_WalkTo( AMX* amx, cell* params )
 		float y = amx_ctof(params[3]);
 		float z = amx_ctof(params[4]);
 		bool z_map = (params[5]==0?false:true);
-		pNPC[npcid]->GoTo(x,y,z,NPC_WALKING_DISTANCE,z_map);
+		pNPC[npcid]->GoTo(x,y,z,VELOCITY_LEN_WALK,z_map,false);
 		pNPC[npcid]->SetKeys(KEY_UP,0,KEY_WALK);
+		pNPC[npcid]->SetState(NPC_STATE_ONFOOT);
 		return 1;
 	}
 	return 0;
@@ -267,8 +238,9 @@ static cell AMX_NATIVE_CALL n_NPC_RunTo( AMX* amx, cell* params )
 		float y = amx_ctof(params[3]);
 		float z = amx_ctof(params[4]);
 		bool z_map = (params[5]==0?false:true);
-		pNPC[npcid]->GoTo(x,y,z,NPC_RUNING_DISTANCE,z_map);
+		pNPC[npcid]->GoTo(x,y,z,VELOCITY_LEN_RUN,z_map,false);
 		pNPC[npcid]->SetKeys(KEY_UP,0,0);
+		pNPC[npcid]->SetState(NPC_STATE_ONFOOT);
 		return 1;
 	}
 	return 0;
@@ -283,8 +255,9 @@ static cell AMX_NATIVE_CALL n_NPC_SprintTo( AMX* amx, cell* params )
 		float y = amx_ctof(params[3]);
 		float z = amx_ctof(params[4]);
 		bool z_map = (params[5]==0?false:true);
-		pNPC[npcid]->GoTo(x,y,z,NPC_SPRINTING_DISTANCE,z_map);
+		pNPC[npcid]->GoTo(x,y,z,VELOCITY_LEN_SPRINT,z_map,false);
 		pNPC[npcid]->SetKeys(KEY_UP,0,KEY_SPRINT);
+		pNPC[npcid]->SetState(NPC_STATE_ONFOOT);
 		return 1;
 	}
 	return 0;
@@ -295,7 +268,7 @@ static cell AMX_NATIVE_CALL n_NPC_LookAt( AMX* amx, cell* params )
 	int npcid = (int)params[1];
 	if(pNPC[npcid])
 	{
-		float x,y,z,tx,ty,tz;
+		float x,y,z,tx,ty,tz,len;
 		pNPC[npcid]->GetPosition(&x,&y,&z);
 		z += 0.7f;
 		tx = amx_ctof(params[2]);
@@ -305,6 +278,10 @@ static cell AMX_NATIVE_CALL n_NPC_LookAt( AMX* amx, cell* params )
 		tx -= x;
 		ty -= y;
 		tz -= z;
+		len = sqrt((tx*tx) + (ty*ty) + (tz*tz));
+		tx /= len;
+		ty /= len;
+		tz /= len;
 		// set data
 		pNPC[npcid]->SetCameraPos(x,y,z);
 		pNPC[npcid]->SetCameraFrontVector(tx,ty,tz);
@@ -322,25 +299,14 @@ static cell AMX_NATIVE_CALL n_NPC_AimAt( AMX* amx, cell* params )
 	int npcid = (int)params[1];
 	if(pNPC[npcid])
 	{
-		float x,y,z,tx,ty,tz;
-		pNPC[npcid]->GetPosition(&x,&y,&z);
-		z += 0.7f;
+		float tx,ty,tz;
+
 		tx = amx_ctof(params[2]);
 		ty = amx_ctof(params[3]);
 		tz = amx_ctof(params[4]);
-		// z angle
-		float a = (atan2((ty - y),(tx - x)) * 57.2957763671875f) + 270.0f;
-		if(a > 360.0) a -= 360.0;
-		// create vector
-		tx -= x;
-		ty -= y;
-		tz -= z;
-		// z camera angle
-		float z_aim = -acos(((tx *tx) + (ty * ty)) / (sqrt((tx * tx) + (ty * ty) + (tz * tz)) * sqrt((tx * tx) + (ty * ty)))) + 0.1f;
-		pNPC[npcid]->SetCameraZAim(z_aim);
-		// set data
-		pNPC[npcid]->SetCameraPos(x,y,z);
-		pNPC[npcid]->SetCameraFrontVector(tx,ty,tz);
+
+		pNPC[npcid]->SetAimByWeapon(pNPC[npcid]->GetWeapon(),tx,ty,tz);
+
 		int ud,lr,other;
 		pNPC[npcid]->GetKeys(&ud,&lr,&other);
 		pNPC[npcid]->SetKeys(ud,lr,KEY_HANDBRAKE);
@@ -363,8 +329,6 @@ static cell AMX_NATIVE_CALL n_NPC_AimAt( AMX* amx, cell* params )
 			{
 				pNPC[npcid]->SetCameraMode(7);
 				pNPC[npcid]->SetWeaponState(2);
-				// z aim
-				pNPC[npcid]->SetAngle(a);
 				break;
 			}
 		}
@@ -372,31 +336,19 @@ static cell AMX_NATIVE_CALL n_NPC_AimAt( AMX* amx, cell* params )
 	}
 	return 1;
 }
-// NPC_ShotAt(NPC:npcid,Float:X,Float:Y,Float:Z);
-static cell AMX_NATIVE_CALL n_NPC_ShotAt( AMX* amx, cell* params )
+// NPC_ShootAt(NPC:npcid,Float:X,Float:Y,Float:Z);
+static cell AMX_NATIVE_CALL n_NPC_ShootAt( AMX* amx, cell* params )
 {
 	int npcid = (int)params[1];
 	if(pNPC[npcid])
 	{
-		float x,y,z,tx,ty,tz;
-		pNPC[npcid]->GetPosition(&x,&y,&z);
-		z += 0.7f;
+		float tx,ty,tz;
+
 		tx = amx_ctof(params[2]);
 		ty = amx_ctof(params[3]);
 		tz = amx_ctof(params[4]);
-		// z angle
-		float a = (atan2((ty - y),(tx - x)) * 57.2957763671875f) + 270.0f;
-		if(a > 360.0f) a -= 360.0f;
-		// create vector
-		tx -= x;
-		ty -= y;
-		tz -= z;
-		// z camera angle
-		float z_aim = -acos(((tx *tx) + (ty * ty)) / (sqrt((tx * tx) + (ty * ty) + (tz * tz)) * sqrt((tx * tx) + (ty * ty)))) + 0.1f;
-		pNPC[npcid]->SetCameraZAim(z_aim);
-		// set data
-		pNPC[npcid]->SetCameraPos(x,y,z);
-		pNPC[npcid]->SetCameraFrontVector(tx,ty,tz);
+
+		pNPC[npcid]->SetAimByWeapon(pNPC[npcid]->GetWeapon(),tx,ty,tz);
 		// keys
 		int ud,lr,other;
 		pNPC[npcid]->GetKeys(&ud,&lr,&other);
@@ -420,8 +372,6 @@ static cell AMX_NATIVE_CALL n_NPC_ShotAt( AMX* amx, cell* params )
 			{
 				pNPC[npcid]->SetCameraMode(7);
 				pNPC[npcid]->SetWeaponState(WEAPONSTATE_MORE_BULLETS);
-				// z aim
-				pNPC[npcid]->SetAngle(a);
 				break;
 			}
 		}
@@ -629,7 +579,7 @@ static cell AMX_NATIVE_CALL n_SetNPCHealth( AMX* amx, cell* params )
 	{
 		float health = amx_ctof(params[2]);
 		pNPC[npcid]->SetHealth(health);
-		if(health <= 0.0) pNPC[npcid]->Kill(-1,0);
+		if(health <= 0.0) pNPC[npcid]->Kill(npcid,0);
 		return 1;
 	}
 	return 0;
@@ -689,7 +639,7 @@ static cell AMX_NATIVE_CALL n_GetNPCInterior( AMX* amx, cell* params )
 	}
 	return 0;
 }
-// SetNPCSpecialAction(NPC:npcid,interior);
+// SetNPCSpecialAction(NPC:npcid,sactionid);
 static cell AMX_NATIVE_CALL n_SetNPCSpecialAction( AMX* amx, cell* params )
 {
 	int npcid = (int)params[1];
@@ -707,6 +657,27 @@ static cell AMX_NATIVE_CALL n_GetNPCSpecialAction( AMX* amx, cell* params )
 	if(pNPC[npcid])
 	{
 		return pNPC[npcid]->GetSpecialAction();
+	}
+	return 0;
+}
+// SetNPCAnimationIndex(NPC:npcid,animationid);
+static cell AMX_NATIVE_CALL n_SetNPCAnimationIndex( AMX* amx, cell* params )
+{
+	int npcid = (int)params[1];
+	if(pNPC[npcid])
+	{
+		pNPC[npcid]->SetAnimationIndex(params[2]);
+		return 1;
+	}
+	return 0;
+}
+// GetNPCAnimationIndex(NPC:npcid);
+static cell AMX_NATIVE_CALL n_GetNPCAnimationIndex( AMX* amx, cell* params )
+{
+	int npcid = (int)params[1];
+	if(pNPC[npcid])
+	{
+		return pNPC[npcid]->GetAnimationIndex();
 	}
 	return 0;
 }
@@ -844,6 +815,7 @@ static cell AMX_NATIVE_CALL n_StopNPC( AMX* amx, cell* params )
 	}
 	return 0;
 }
+
 // PutNPCInVehicle(NPC:npcid,vehicleid,seat);
 static cell AMX_NATIVE_CALL n_PutNPCInVehicle( AMX* amx, cell* params )
 {
@@ -864,10 +836,11 @@ static cell AMX_NATIVE_CALL n_NPC_DriveTo( AMX* amx, cell* params )
 		float x = amx_ctof(params[2]);
 		float y = amx_ctof(params[3]);
 		float z = amx_ctof(params[4]);
-		float speed = amx_ctof(params[5]);
+		float speed = amx_ctof(params[5]) / 200.0f;
 		bool z_map = (params[6]==0?false:true);
-		pNPC[npcid]->DriveTo(x,y,z,speed,z_map);
-		pNPC[npcid]->SetKeys(0,0,0);
+		pNPC[npcid]->GoTo(x,y,z,speed,z_map,true);
+		pNPC[npcid]->SetKeys(KEY_UP,0,0);
+		pNPC[npcid]->SetState(NPC_STATE_DRIVER);
 		return 1;
 	}
 	return 0;
@@ -1020,13 +993,13 @@ static cell AMX_NATIVE_CALL n_StopRecordingPlayback( AMX* amx, cell* params )
 // ToogleVisualDeath(tstate);
 static cell AMX_NATIVE_CALL n_ToogleVisualDeath( AMX* amx, cell* params )
 {
-	VisualDeath = static_cast<char>(params[1]);
+	VisualDeath = (params[1] == 0?0:1);
 	return 1;
 }
 // FindLastFreeSlot();
 static cell AMX_NATIVE_CALL n_FindLastFreeSlot( AMX* amx, cell* params )
 {
-	for(int i = (MAX_PLAYERS - 1);i > 0;i--)
+	for(int i = (MaxPlayers - 1);i > 0;i--)
 	{
 		if(!pSaMp->players->player[i]) return i;
 	}
@@ -1038,11 +1011,11 @@ static cell AMX_NATIVE_CALL n_OpenNode( AMX* amx, cell* params )
 {
 	for(int i = 0;i < MAX_NODES;i++)
 	{
-		if(Nodes[i]) continue;
+		if(pNodes[i]) continue;
 		char* temp;
 		amx_StrParam(amx, params[1], temp);
 
-		Nodes[i] = new CNode(temp);
+		pNodes[i] = new CNode(temp);
 		return i;
 	}
 	return 0;	
@@ -1051,10 +1024,10 @@ static cell AMX_NATIVE_CALL n_OpenNode( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_CloseNode( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		delete Nodes[nodeid];
-		Nodes[nodeid] = 0;
+		delete pNodes[nodeid];
+		pNodes[nodeid] = 0;
 		return 1;
 	}
 	return 0;
@@ -1063,13 +1036,13 @@ static cell AMX_NATIVE_CALL n_CloseNode( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodeHeader( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		int d1 = 0,
+		unsigned long d1 = 0,
 			d2 = 0,
 			d3 = 0,
 			d4 = 0;
-		Nodes[nodeid]->GetInfo(&d1,&d2,&d3,&d4);
+		pNodes[nodeid]->GetInfo(&d1,&d2,&d3,&d4);
 		//
 		cell
 			* p1,
@@ -1093,9 +1066,9 @@ static cell AMX_NATIVE_CALL n_GetNodeHeader( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_SetNodePoint( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		Nodes[nodeid]->SetPoint((int)params[2]);
+		pNodes[nodeid]->SetPoint((int)params[2]);
 		return 1;
 	}
 	return 0;
@@ -1104,9 +1077,9 @@ static cell AMX_NATIVE_CALL n_SetNodePoint( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodePoint( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->GetPointId();
+		return pNodes[nodeid]->GetPointId();
 	}
 	return 0;
 }
@@ -1114,10 +1087,10 @@ static cell AMX_NATIVE_CALL n_GetNodePoint( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodePointPos( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
 		float x,y,z;
-		Nodes[nodeid]->GetPos(&x,&y,&z);
+		pNodes[nodeid]->GetPos(&x,&y,&z);
 
 		cell
 			* p1,
@@ -1138,9 +1111,9 @@ static cell AMX_NATIVE_CALL n_GetNodePointPos( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodePointLinkId( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->GetLinkId();
+		return pNodes[nodeid]->GetLinkId();
 	}
 	return 0;
 }
@@ -1148,9 +1121,9 @@ static cell AMX_NATIVE_CALL n_GetNodePointLinkId( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodePointAreaId( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->GetAreaId();
+		return pNodes[nodeid]->GetAreaId();
 	}
 	return 0;
 }
@@ -1158,9 +1131,9 @@ static cell AMX_NATIVE_CALL n_GetNodePointAreaId( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodePointWidth( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->GetPathWidth();
+		return pNodes[nodeid]->GetPathWidth();
 	}
 	return 0;
 }
@@ -1168,9 +1141,9 @@ static cell AMX_NATIVE_CALL n_GetNodePointWidth( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodePointLinkCount( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->GetLinkCount();
+		return pNodes[nodeid]->GetLinkCount();
 	}
 	return 0;
 }
@@ -1178,9 +1151,9 @@ static cell AMX_NATIVE_CALL n_GetNodePointLinkCount( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodePointTrafficLevel( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->GetTrafficLevel();
+		return pNodes[nodeid]->GetTrafficLevel();
 	}
 	return 0;
 }
@@ -1188,9 +1161,9 @@ static cell AMX_NATIVE_CALL n_GetNodePointTrafficLevel( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_IsNodePointRoadBlock( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->IsRoadBlock();
+		return pNodes[nodeid]->IsRoadBlock();
 	}
 	return 0;
 }
@@ -1198,9 +1171,9 @@ static cell AMX_NATIVE_CALL n_IsNodePointRoadBlock( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_IsNodePointBoats( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->IsBoats();
+		return pNodes[nodeid]->IsBoats();
 	}
 	return 0;
 }
@@ -1208,9 +1181,9 @@ static cell AMX_NATIVE_CALL n_IsNodePointBoats( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_IsNodePointEmergency( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->IsEmergency();
+		return pNodes[nodeid]->IsEmergency();
 	}
 	return 0;
 }
@@ -1218,9 +1191,9 @@ static cell AMX_NATIVE_CALL n_IsNodePointEmergency( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_IsNodePointNotHighway( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->IsNotHighway();
+		return pNodes[nodeid]->IsNotHighway();
 	}
 	return 0;
 }
@@ -1228,9 +1201,9 @@ static cell AMX_NATIVE_CALL n_IsNodePointNotHighway( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_IsNodePointSpawn( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->IsSpawn();
+		return pNodes[nodeid]->IsSpawn();
 	}
 	return 0;
 }
@@ -1238,9 +1211,9 @@ static cell AMX_NATIVE_CALL n_IsNodePointSpawn( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_IsNodePointRoadBlock1( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->IsRoadBlock1();
+		return pNodes[nodeid]->IsRoadBlock1();
 	}
 	return 0;
 }
@@ -1248,9 +1221,9 @@ static cell AMX_NATIVE_CALL n_IsNodePointRoadBlock1( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_IsNodePointParking( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->IsParking();
+		return pNodes[nodeid]->IsParking();
 	}
 	return 0;
 }
@@ -1258,9 +1231,9 @@ static cell AMX_NATIVE_CALL n_IsNodePointParking( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_IsNodePointRoadBlock2( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->IsRoadBlock2();
+		return pNodes[nodeid]->IsRoadBlock2();
 	}
 	return 0;
 }
@@ -1268,9 +1241,9 @@ static cell AMX_NATIVE_CALL n_IsNodePointRoadBlock2( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodePointType( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->GetNodeType();
+		return pNodes[nodeid]->GetNodeType();
 	}
 	return 0;
 }
@@ -1278,9 +1251,9 @@ static cell AMX_NATIVE_CALL n_GetNodePointType( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_SetNodeLink( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		Nodes[nodeid]->SetLink((int)params[2]);
+		pNodes[nodeid]->SetLink((int)params[2]);
 		return 1;
 	}
 	return 0;
@@ -1289,9 +1262,9 @@ static cell AMX_NATIVE_CALL n_SetNodeLink( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodeLinkAreaId( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+	if(pNodes[nodeid])
 	{
-		return Nodes[nodeid]->GetLinkAreaId();
+		return pNodes[nodeid]->GetLinkAreaId();
 	}
 	return 0;
 }
@@ -1299,58 +1272,284 @@ static cell AMX_NATIVE_CALL n_GetNodeLinkAreaId( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_GetNodeLinkNodeId( AMX* amx, cell* params )
 {
 	int nodeid = (int)params[1];
-	if(Nodes[nodeid])
+
+	if(pNodes[nodeid]) return pNodes[nodeid]->GetLinkNodeId();
+	return 0;
+}
+// nodes_Init();
+static cell AMX_NATIVE_CALL n_nodes_Init( AMX* amx, cell* params )
+{
+	if(!pNodeManager) pNodeManager = new CNodeManager();
+	return 1;
+}
+// nodes_Exit();
+static cell AMX_NATIVE_CALL n_nodes_Exit( AMX* amx, cell* params )
+{
+	if(pNodeManager) 
 	{
-		return Nodes[nodeid]->GetLinkNodeId();
+		delete pNodeManager;
+		pNodeManager = NULL;
+	}
+	return 1;
+}
+// nodes_GetNodePos(nodetype,nodeid,&Float:x,&Float:y,&Float:z);
+static cell AMX_NATIVE_CALL n_nodes_GetNodePos( AMX* amx, cell* params )
+{
+	cell
+			* x,
+			* y,
+			* z;
+	int nodetype = (int)params[1];
+	int nodeid = (int)params[2];
+	float pos[3];
+
+	amx_GetAddr(amx, params[3], &x);
+	amx_GetAddr(amx, params[4], &y);
+	amx_GetAddr(amx, params[5], &z);
+
+	if(pNodeManager->GetNodePos(nodetype,nodeid,&pos[0],&pos[1],&pos[2]))
+	{
+		*x = amx_ftoc(pos[0]);
+		*y = amx_ftoc(pos[1]);
+		*z = amx_ftoc(pos[2]);
+
+		return 1;
+	}
+	else return 0;
+}
+// nodes_GetNodeAreaid(nodetype,nodeid);
+static cell AMX_NATIVE_CALL n_nodes_GetNodeAreaid( AMX* amx, cell* params )
+{
+	int nodetype = (int)params[1];
+	int nodeid = (int)params[2];
+
+	return pNodeManager->GetNodeAreaid(nodetype,nodeid);
+}
+// nodes_GetNodeNodeid(nodetype,nodeid);
+static cell AMX_NATIVE_CALL n_nodes_GetNodeNodeid( AMX* amx, cell* params )
+{
+	int nodetype = (int)params[1];
+	int nodeid = (int)params[2];
+
+	return pNodeManager->GetNodeNodeid(nodetype,nodeid);
+}
+// nodes_GetNodeLink(nodetype,nodeid,linkid);
+static cell AMX_NATIVE_CALL n_nodes_GetNodeLink( AMX* amx, cell* params )
+{
+	int nodetype = (int)params[1];
+	int nodeid = (int)params[2];
+	int linkid = (int)params[3];
+
+	return pNodeManager->GetNodeLink(nodetype,nodeid,linkid);
+}
+// Float:nodes_GetNodeLinkDist(nodetype,nodeid,linkid);
+static cell AMX_NATIVE_CALL n_nodes_GetNodeLinkDist( AMX* amx, cell* params )
+{
+	int nodetype = (int)params[1];
+	int nodeid = (int)params[2];
+	int linkid = (int)params[3];
+
+	float result = pNodeManager->GetNodeLinkDist(nodetype,nodeid,linkid);
+
+	return amx_ftoc(result);
+}
+// nodes_GetNodeLinkCount(nodetype,nodeid);
+static cell AMX_NATIVE_CALL n_nodes_GetNodeLinkCount( AMX* amx, cell* params )
+{
+	int nodetype = (int)params[1];
+	int nodeid = (int)params[2];
+
+	return pNodeManager->GetNodeLinkCount(nodetype,nodeid);
+}
+// nodes_GetNodeCount(nodetype);
+static cell AMX_NATIVE_CALL n_nodes_GetNodeCount( AMX* amx, cell* params )
+{
+	int nodetype = (int)params[1];
+
+	return pNodeManager->GetNodeCount(nodetype);
+}
+// nodes_GetNodeid(nodetype,Float:x,Float:y,Float:z);
+static cell AMX_NATIVE_CALL n_nodes_GetNodeid( AMX* amx, cell* params )
+{
+	int nodetype = (int)params[1];
+	float x = amx_ctof(params[2]);
+	float y = amx_ctof(params[3]);
+	float z = amx_ctof(params[4]);
+	
+	return pNodeManager->GetNodeid(nodetype,x,y,z);
+}
+// nodes_GetAreaid(Float:x,Float:y,Float:z);
+static cell AMX_NATIVE_CALL n_nodes_GetAreaid( AMX* amx, cell* params )
+{
+	float x = amx_ctof(params[1]);
+	float y = amx_ctof(params[2]);
+	float z = amx_ctof(params[3]);
+	
+	return pNodeManager->GetAreaid(x,y,z);
+}
+// nodes_GetAreasFromPos(Float:startx,Float:starty,Float:endx,Float:endy,areas[64]);
+static cell AMX_NATIVE_CALL n_nodes_GetAreasFromPos( AMX* amx, cell* params )
+{
+	cell* r_areas;
+	unsigned char* areas = new unsigned char[64];
+
+	float startx = amx_ctof(params[1]);
+	float starty = amx_ctof(params[2]);
+	float endx = amx_ctof(params[3]);
+	float endy = amx_ctof(params[4]);
+	amx_GetAddr(amx,params[5],&r_areas);
+
+	if(pNodeManager->GetAreasFromPos(startx,starty,endx,endy,areas))
+	{
+		for(unsigned char i = 0;i < 64;i++) r_areas[i] = areas[i];
+		return 1;
+	}
+	else return 0;
+}
+// nodes_GetAreaNodeid(nodetype,areaid,nodeid);
+static cell AMX_NATIVE_CALL n_nodes_GetAreaNodeid( AMX* amx, cell* params )
+{
+	unsigned char nodetype = (unsigned char)params[1];
+	unsigned char areaid = (unsigned char)params[2];
+	unsigned long nodeid = (unsigned long)params[3];
+	
+	return pNodeManager->GetAreaNodeid(nodetype,areaid,nodeid);
+}
+// nodes_GetAreaNodeCount(nodetype,areaid);
+static cell AMX_NATIVE_CALL n_nodes_GetAreaNodeCount( AMX* amx, cell* params )
+{
+	unsigned char nodetype = (unsigned char)params[1];
+	unsigned char areaid = (unsigned char)params[2];
+	
+	return pNodeManager->GetAreaNodeCount(nodetype,areaid);
+}
+// dijkstra_CalcPathByNodes(areas[64],nodetype,startnodeid,endnodeid);
+static cell AMX_NATIVE_CALL n_dijkstra_CalcPathByNodes( AMX* amx, cell* params )
+{
+	cell* r_areas;
+	unsigned char areas[64];
+
+	amx_GetAddr(amx,params[1],&r_areas);
+	int nodetype = (int)params[2];
+	int startnodeid = (int)params[3];
+	int endnodeid = (int)params[4];
+
+	for(unsigned char i = 0;i < 64;i++) areas[i] = (unsigned char)r_areas[i];
+
+	return StartPathCalculation(areas,nodetype,startnodeid,endnodeid);
+}
+// path_Destroy(pathid);
+static cell AMX_NATIVE_CALL n_path_Destroy( AMX* amx, cell* params )
+{
+	unsigned short pathid = (unsigned short)params[1];
+	
+	if((int)pNodePaths[pathid] > 1)
+	{
+		delete pNodePaths[pathid];
+		pNodePaths[pathid] = NULL;
+		return 1;
 	}
 	return 0;
 }
-// synccpy(playerid,npcid);
-static cell AMX_NATIVE_CALL n_synccpy( AMX* amx, cell* params )
+// path_GetPathNodeid(pathid,pointid);
+static cell AMX_NATIVE_CALL n_path_GetPathNodeid( AMX* amx, cell* params )
 {
-	int playerid = (int)params[1];
-	int npcid = (int)params[2];
-
-	CPlayer* pl = pSaMp->players->player[playerid];
-	CPlayer* np = pSaMp->players->player[npcid];
+	unsigned short pathid = (unsigned short)params[1];
+	unsigned long pointid = (unsigned long)params[2];
 	
-	typedef void (*logprintf_t)(char* format, ...);
-	extern logprintf_t logprintf;
-
-	if(pl)
+	if((int)pNodePaths[pathid] > 1)
 	{
-		if(np)
-		{
-			unsigned short vid = np->PassangerSync.VehicleId;
+		return pNodePaths[pathid]->GetPathNodeid(pointid);
+	}
+	return INVALID_NODE_ID;
+}
+// path_GetPathLen(pathid);
+static cell AMX_NATIVE_CALL n_path_GetPathLen( AMX* amx, cell* params )
+{
+	unsigned short pathid = (unsigned short)params[1];
+	
+	if((int)pNodePaths[pathid] > 1)
+	{
+		return pNodePaths[pathid]->GetPathLen();
+	}
+	return 0;
+}
+// Float:path_GetPathDist(pathid);
+static cell AMX_NATIVE_CALL n_path_GetPathDist( AMX* amx, cell* params )
+{
+	unsigned short pathid = (unsigned short)params[1];
+	
+	if((int)pNodePaths[pathid] > 1)
+	{
+		float result = pNodePaths[pathid]->GetPathDist();
+		return amx_ftoc(result);
+	}
+	return 0;
+}
+// zmap_Init(file[],mode);
+static cell AMX_NATIVE_CALL n_zmap_Init( AMX* amx, cell* params )
+{
+	char* temp;
+	int mode;
+	amx_StrParam(amx, params[1], temp);
+	mode = (int)params[2];
 
-			memcpy(&np->PassangerSync,&pl->PassangerSync,16);
-			memcpy(&np->AimSync,&pl->AimSync,29);
+	if(!pZMap) pZMap = new CZMap(temp,mode);
 
-			np->PassangerSync.VehicleId = vid;
-			
-			logprintf("passanger");
-			logprintf("seat %d",np->PassangerSync.Seat);
-			logprintf("driveby %d",np->PassangerSync.DriveBy);
-			logprintf("weapon %d",np->PassangerSync.Weapon);
-			logprintf("health %d",np->PassangerSync.Health);
-			logprintf("armour %d",np->PassangerSync.Armour);
-			logprintf("keyslr %d",np->PassangerSync.KeysLR);
-			logprintf("keysud %d",np->PassangerSync.KeysUD);
-			logprintf("other %d",np->PassangerSync.KeysOther);
-			logprintf("position %f,%f,%f",np->PassangerSync.Position[0],np->PassangerSync.Position[1],np->PassangerSync.Position[2]);
-			
-			logprintf("aim");
-			logprintf("cameramode %d",np->AimSync.CameraMode);
-			logprintf("fv %f,%f,%f",np->AimSync.FrontVector[0],np->AimSync.FrontVector[1],np->AimSync.FrontVector[2]);
-			logprintf("pos %f,%f,%f",np->AimSync.Position[0],np->AimSync.Position[1],np->AimSync.Position[2]);
-			logprintf("zaim %f",np->AimSync.ZAim);
-			logprintf("CamExtZoom %d",np->AimSync.CamExtZoom);
-			logprintf("WeaponState %d",np->AimSync.WeaponState);
-			logprintf("Unknown1 %d",np->AimSync.Unknown1);
-		}
+	return 1;
+}
+// zmap_Exit();
+static cell AMX_NATIVE_CALL n_zmap_Exit( AMX* amx, cell* params )
+{
+	if(pZMap)
+	{
+		delete pZMap;
+		pZMap = NULL;
 	}
 
-	return 0;
+	return 1;
+}
+// Float:zmap_GetZCoord(Float:x,Float:y);
+static cell AMX_NATIVE_CALL n_zmap_GetZCoord( AMX* amx, cell* params )
+{
+	float x = amx_ctof(params[1]);
+	float y = amx_ctof(params[2]);
+	float result = 0.0;
+
+	if(pZMap) result = pZMap->GetZForCoords(x,y);
+
+	return amx_ftoc(result);
+}
+// zmap_IsPointToPointLOS(Float:sx,Float:sy,Float:sz,Float:ex,Float:ey,Float:ez);
+static cell AMX_NATIVE_CALL n_zmap_IsPointToPointLOS( AMX* amx, cell* params )
+{
+	float sx = amx_ctof(params[1]);
+	float sy = amx_ctof(params[2]);
+	float sz = amx_ctof(params[3]);
+	float ex = amx_ctof(params[4]);
+	float ey = amx_ctof(params[5]);
+	float ez = amx_ctof(params[6]);
+	bool result = false;
+
+	if(pZMap) result = pZMap->IsPointToPointLOS(sx,sy,sz,ex,ey,ez);
+
+	return result;
+}
+// microtime(&sec,&microsec);
+static cell AMX_NATIVE_CALL n_microtime( AMX* amx, cell* params )
+{
+	cell *p1,*p2;
+	long sec,microsec;
+
+	amx_GetAddr(amx, params[1], &p1);
+	amx_GetAddr(amx, params[2], &p2);
+
+	microtime(&sec,&microsec);
+
+	*p1 = (cell)sec;
+	*p2 = (cell)microsec;
+
+	return 1;
 }
 
 AMX_NATIVE_INFO Natives[ ] =
@@ -1379,7 +1578,7 @@ AMX_NATIVE_INFO Natives[ ] =
 	{ "NPC_SprintTo",				n_NPC_SprintTo},
 	{ "NPC_LookAt",					n_NPC_LookAt},
 	{ "NPC_AimAt",					n_NPC_AimAt},
-	{ "NPC_ShotAt",					n_NPC_ShotAt},
+	{ "NPC_ShootAt",				n_NPC_ShootAt},
 	{ "SetNPCCameraPos",			n_SetNPCCameraPos},
 	{ "GetNPCCameraPos",			n_GetNPCCameraPos},
 	{ "SetNPCCameraFrontVector",	n_SetNPCCameraFrontVector},
@@ -1402,6 +1601,8 @@ AMX_NATIVE_INFO Natives[ ] =
 	{ "GetNPCInterior",				n_GetNPCInterior},
 	{ "SetNPCSpecialAction",		n_SetNPCSpecialAction},
 	{ "GetNPCSpecialAction",		n_GetNPCSpecialAction},
+	{ "SetNPCAnimationIndex",		n_SetNPCAnimationIndex},
+	{ "GetNPCAnimationIndex",		n_GetNPCAnimationIndex},
 	{ "SetNPCSkin",					n_SetNPCSkin},
 	{ "GetNPCSkin",					n_GetNPCSkin},
 	{ "SetNPCSurfing",				n_SetNPCSurfing},
@@ -1455,7 +1656,34 @@ AMX_NATIVE_INFO Natives[ ] =
 	{ "IsNodePointParking",			n_IsNodePointParking},
 	{ "IsNodePointRoadBlock2",		n_IsNodePointRoadBlock2},
 	// nodes module
-	{ "nodes_OnInit",				n_nodes_OnInit},
+	{ "nodes_Init",					n_nodes_Init},
+	{ "nodes_Exit",					n_nodes_Exit},
+	{ "nodes_GetNodePos",			n_nodes_GetNodePos},
+	{ "nodes_GetNodeAreaid",		n_nodes_GetNodeAreaid},
+	{ "nodes_GetNodeNodeid",		n_nodes_GetNodeNodeid},
+	{ "nodes_GetNodeLink",			n_nodes_GetNodeLink},
+	{ "nodes_GetNodeLinkDist",		n_nodes_GetNodeLinkDist},
+	{ "nodes_GetNodeLinkCount",		n_nodes_GetNodeLinkCount},
+	{ "nodes_GetNodeCount",			n_nodes_GetNodeCount},
+	{ "nodes_GetNodeid",			n_nodes_GetNodeid},
+	{ "nodes_GetAreaid",			n_nodes_GetAreaid},
+	{ "nodes_GetAreasFromPos",		n_nodes_GetAreasFromPos},
+	{ "nodes_GetAreaNodeid",		n_nodes_GetAreaNodeid},
+	{ "nodes_GetAreaNodeCount",		n_nodes_GetAreaNodeCount},
+	// dijkstra module
+	{ "dijkstra_CalcPathByNodes",	n_dijkstra_CalcPathByNodes},
+	// node paths
+	{ "path_Destroy",				n_path_Destroy},
+	{ "path_GetPathNodeid",			n_path_GetPathNodeid},
+	{ "path_GetPathLen",			n_path_GetPathLen},
+	{ "path_GetPathDist",			n_path_GetPathDist},	
+	// zmap
+	{ "zmap_Init",					n_zmap_Init},
+	{ "zmap_Exit",					n_zmap_Exit},
+	{ "zmap_GetZCoord",				n_zmap_GetZCoord},
+	{ "zmap_IsPointToPointLOS",		n_zmap_IsPointToPointLOS},
+	// addition
+	{ "microtime",					n_microtime},
 	{ 0,							0 }
 };
 

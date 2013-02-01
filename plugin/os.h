@@ -11,9 +11,9 @@
 	#include "windows.h"
 	#define THREAD_IDENTIFY(a) HANDLE a
 	#define THREAD_RESULT(a) DWORD a
-	#define THREAD_START(a) DWORD WINAPI a(LPVOID lpParameter)
-	#define THREAD_END return 1;}
-	#define CREATE_THREAD(a,b,c) a = CreateThread(NULL,0,b,0,0,&c)
+	#define THREAD_START(a) DWORD WINAPI a(LPVOID arg)
+	#define THREAD_END return 1;
+	#define CREATE_THREAD(a,b,c,d) a = CreateThread(NULL,0,b,d,0,&c)
 	#define CALL_NOARGS(a,b) (((FakeClass*)a)->*b)()
 	#define CALL_ARGS(a,b,c) (((FakeClass*)a)->*b)(c)
 	#define UTILS();
@@ -30,8 +30,8 @@
 	#define THREAD_IDENTIFY(a) pthread_t a
 	#define THREAD_RESULT(a) int a
 	#define THREAD_START(a) void* a(void* arg)
-	#define THREAD_END }
-	#define CREATE_THREAD(a,b,c) c = pthread_create(&a,NULL,b,NULL);
+	#define THREAD_END 
+	#define CREATE_THREAD(a,b,c,d) c = pthread_create(&a,0,b,d);
 	#define CALL_NOARGS(a,b) b((FakeClass*)a)
 	#define CALL_ARGS(a,b,c) b((FakeClass*)a,c)
 	#define UTILS(); TickCountLoad();

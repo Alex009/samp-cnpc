@@ -17,6 +17,5 @@ public:
 	void ClientDisconnect(void* players,int id,int reason);
 	void ClientSpawn(void* player);
 	void ClientDeath(void* player,int reason,int killerid);
-
-	MUTEX_IDENTIFY(GetMutex());
+	unsigned short GetMaxPlayers();
 };

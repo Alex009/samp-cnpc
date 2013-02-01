@@ -78,7 +78,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PLUGIN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PLUGIN_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -97,34 +97,42 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\009%27s files\C++ projects\Controllable NPC SA-MP 0.3.1\plugin\modules\nodes.cpp" />
-    <ClCompile Include="Nodes.cpp" />
-    <ClCompile Include="callbacks.cpp" />
+    <ClCompile Include="CNodePath.cpp" />
+    <ClCompile Include="path_calc.cpp" />
+    <ClCompile Include="utils\time.cpp" />
+    <ClCompile Include="utils\utils.cpp" />
+    <ClCompile Include="CNodeManager.cpp" />
+    <ClCompile Include="CZMap.cpp" />
+    <ClCompile Include="CNode.cpp" />
+    <ClCompile Include="CCallbacks.cpp" />
     <ClCompile Include="CNPC.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="natives.cpp" />
     <ClCompile Include="static_data.cpp" />
-    <ClCompile Include="threads.cpp" />
-    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="thread.cpp" />
     <ClCompile Include="SDK\amxplugin.cpp" />
     <ClCompile Include="SDK\amx\getch.c" />
     <ClCompile Include="utils\3DVector.cpp" />
     <ClCompile Include="utils\quaternion.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Nodes.h" />
+    <ClInclude Include="CNodePath.h" />
+    <ClInclude Include="path_calc.h" />
+    <ClInclude Include="utils\time.h" />
+    <ClInclude Include="utils\utils.h" />
+    <ClInclude Include="CNodeManager.h" />
+    <ClInclude Include="CZMap.h" />
+    <ClInclude Include="CNode.h" />
     <ClInclude Include="NodesStructs.h" />
     <ClInclude Include="SAMP\address.h" />
-    <ClInclude Include="callbacks.h" />
+    <ClInclude Include="CCallbacks.h" />
     <ClInclude Include="CNPC.h" />
     <ClInclude Include="defines.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="natives.h" />
     <ClInclude Include="os.h" />
-    <ClInclude Include="threads.h" />
-    <ClInclude Include="utils.h" />
     <ClInclude Include="SDK\plugin.h" />
     <ClInclude Include="SDK\plugincommon.h" />
     <ClInclude Include="SDK\amx\amx.h" />

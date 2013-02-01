@@ -4,9 +4,23 @@
  *	Description: Controllable NPCs class
  */
 
+#pragma once
+
 #include "SAMP/CPlayer.h"
 #include "SAMP/packets.h"
 #include <stdio.h>
+
+#define NPC_STATE_REQUEST_CLASS					0
+#define NPC_STATE_ONFOOT						1
+#define NPC_STATE_DRIVER						2
+#define NPC_STATE_PASSENGER						3
+#define NPC_STATE_DEATH							4
+#define	NPC_STATE_PLAYBACK						5
+
+#define VELOCITY_LEN_WALK		0.03f
+#define VELOCITY_LEN_RUN		0.08f
+#define VELOCITY_LEN_SPRINT		0.12f
+#define VELOCITY_DISTANCE		0.8f
 
 class CNPC
 {
@@ -38,6 +52,8 @@ public:
 	void	GetKeys(int* ud,int* lr,int* other);
 	void	SetSpecialAction(int actionid);
 	int		GetSpecialAction();
+	void	SetAnimationIndex(unsigned long animationid);
+	unsigned long GetAnimationIndex();
 	void	SetWeapon(int weaponid);
 	int		GetWeapon();
 	void	SetWeaponSkillLevel(int weapontype,int level);
@@ -71,9 +87,11 @@ public:
 	void	SetPassangerDriveBy(int dstate);
 	int		GetPassangerDriveBy();
 	// moving
-	void	GoTo(float x,float y,float z,float step,bool use_z_map);
-	void	DriveTo(float x,float y,float z,float step,bool use_z_map);
+	void	GoTo(float x,float y,float z,float velocity,bool use_z_map,bool xyz_rotate);
+	//void	DriveTo(float x,float y,float z,float step,bool use_z_map);
 	void	Stop();
+	// aim
+	void	SetAimByWeapon(int weaponid,float tx,float ty,float tz);
 	// playbacks
 	int		StartRecordingPlayback(char* name);
 	void	ReadNextPlaybackBlock();
@@ -81,6 +99,7 @@ public:
 	void	ContinueRecordingPlayback();
 	void	StopRecordingPlayback(int reason);
 	// thread
+	void	ApplySync(unsigned long type,unsigned char state);
 	void	Sync();
 	int		WeaponDamage(int a_id,float cp_x,float cp_y,float cp_z,float f_x,float f_y,float f_z,float health,int weapon,int type);
 	int		VehicleDamage(int a_id,float cp_x,float cp_y,float cp_z,float f_x,float f_y,float f_z,float health,int weapon,int type);
@@ -93,11 +112,13 @@ public:
 	int				local_playback_type;
 	bool			local_impregnable;
 
-	float			moving_speed;
+	//float			moving_speed;
 	float			moving_distance;
 	float			moving_vector[3];
 	bool			moving_state;
 	bool			moving_zmap;
+	//float			moving_steps;
+	float			moving_velocity;
 	
 	bool			playback_state;
 	int				playback_type;
@@ -107,5 +128,11 @@ public:
 	Packet_Foot		playback_CurrOnFootData;
 	unsigned long	playback_CurrTime;
 
+	unsigned long	door_StartTime;
+
 	float			knock_vector[3];
+
+	double			timep;
+
+	double			LastUpdate;
 };

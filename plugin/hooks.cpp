@@ -14,6 +14,7 @@ class FakeClass {};
 	typedef void (FakeClass::* f_ClientDisconnect)(int,int);
 	typedef void (FakeClass::* f_SpawnForWorld)();
 	typedef void (FakeClass::* f_DeathForWorld)(int,int);
+	typedef unsigned short (FakeClass::* f_GetConfigVar)(char*);
 
 	typedef void (* f_TeleportFunction)(int,float,float,float);
 #else
@@ -21,6 +22,7 @@ class FakeClass {};
 	typedef void (* f_ClientDisconnect)(FakeClass*,int,int);
 	typedef void (* f_SpawnForWorld)(FakeClass*);
 	typedef void (* f_DeathForWorld)(FakeClass*,int,int);
+	typedef unsigned short (* f_GetConfigVar)(FakeClass*,char*);
 #endif
 
 #ifndef PAGESIZE
@@ -32,7 +34,7 @@ f_ClientConnect		pClientConnect;
 f_ClientDisconnect	pClientDisconnect;
 f_SpawnForWorld		pClientSpawn;
 f_DeathForWorld		pClientDeath;
-MUTEX_IDENTIFY(MultiThreadMutex);
+f_GetConfigVar		pGetConfigVar;
 
 // funcs
 bool Unlock(void *address, int len);
@@ -50,8 +52,8 @@ CHooks::CHooks(unsigned long s_version)
 	POINTER_TO_MEMBER(pClientSpawn,(void *)(SPAWN_FOR_WORLD),f_SpawnForWorld);
 	// death
 	POINTER_TO_MEMBER(pClientDeath,(void *)(KILL_FOR_WORLD),f_DeathForWorld);
-	// create mutex
-	CREATE_MUTEX(MultiThreadMutex);
+	// config var
+	POINTER_TO_MEMBER(pGetConfigVar,(void *)(GET_CONFIG_VAR),f_GetConfigVar);
 	// set hook
 	Unlock((void*)(ADDR_THREAD_START),(ADDR_THREAD_END - ADDR_THREAD_START));
 	CallHook(ADDR_THREAD_START,(unsigned long)SAMP_ThreadComplete);
@@ -83,9 +85,9 @@ void CHooks::ClientDeath(void* player,int reason,int killerid)
 	CALL_ARGS(player,pClientDeath,reason _ killerid);
 }
 
-MUTEX_IDENTIFY(CHooks::GetMutex())
+unsigned short CHooks::GetMaxPlayers()
 {
-	return MultiThreadMutex;
+	return CALL_ARGS(*(DWORD*)(CONFIG_CLASS),pGetConfigVar,"maxplayers");
 }
 
 // other
@@ -109,14 +111,4 @@ void CallHook(DWORD from, DWORD to)
 		*(BYTE *)(from) = 0xE8;
 		*(DWORD *)(from + 1) = (DWORD)disp;
 	}
-}
-
-void SAMP_ThreadComplete()
-{
-	// free mutex
-	MUTEX_EXIT(MultiThreadMutex);
-	// sleep
-	SLEEP(5);
-	// close mutex
-	MUTEX_ENTER(MultiThreadMutex);
 }

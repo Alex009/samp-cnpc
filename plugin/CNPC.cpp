@@ -3,21 +3,26 @@
  *	License read in license.txt
  */
 
+// global defines
 #define _USE_MATH_DEFINES
 
+// includes
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 // plugin
 #include "SAMP/CSAMP.h"
 #include "hooks.h"
+#include "CCallbacks.h"
 #include "CNPC.h"
 #include "defines.h"
 #include "os.h"
-#include "callbacks.h"
-#include "utils.h"
+#include "utils/utils.h"
 #include "utils/quaternion.h"
 #include "utils/3DVector.h"
+#include "utils/time.h"
 
+// externs
 extern	CSAMP*		pSaMp;
 extern	CHooks*		pHooks;
 extern	CCallbacks*	pCallbacks;
@@ -53,7 +58,7 @@ CNPC::CNPC(int id,char* name)
 	SetHealth(100.0);
 	SetArmour(0.0);
 
-	moving_speed = 0.0;
+	//moving_speed = 0.0;
 	moving_distance = 0.0;
 	moving_vector[0] = 0.0;
 	moving_vector[1] = 0.0;
@@ -479,6 +484,16 @@ int CNPC::GetSpecialAction()
 	return static_cast<int>(local_class->FootSync.SpecialAction);
 }
 
+void CNPC::SetAnimationIndex(unsigned long animationid)
+{
+	local_class->FootSync.AnimationIndex = animationid;
+}
+
+unsigned long CNPC::GetAnimationIndex()
+{
+	return local_class->FootSync.AnimationIndex;
+}
+
 void CNPC::SetWeapon(int weaponid)
 {
 	switch(local_class->State)
@@ -740,51 +755,42 @@ int CNPC::GetPassangerDriveBy()
  *		MOVING
  */
 
-void CNPC::GoTo(float x,float y,float z,float step,bool use_z_map)
+void CNPC::GoTo(float x,float y,float z,float velocity,bool use_z_map,bool xyz_rotate)
 {
-	// get pos
-	float pos_x,pos_y,pos_z;
-	float euler[3];
-	Quaternion q1,q2;
-	GetPosition(&pos_x,&pos_y,&pos_z);
-	// get len
-	moving_vector[0] = x - pos_x;
-	moving_vector[1] = y - pos_y;
-	moving_vector[2] = z - pos_z;
-	moving_distance = sqrt((moving_vector[0] * moving_vector[0]) + (moving_vector[1] * moving_vector[1]) + (moving_vector[2] * moving_vector[2]));
-	// get vector
-	moving_vector[0] /= moving_distance;
-	moving_vector[1] /= moving_distance;
-	moving_vector[2] /= moving_distance;
-	// get quaternion
-	C3DVector vec(moving_vector[0],moving_vector[1],moving_vector[2]);
-	vec.ToEuler(euler);
-	euler[2] -= (90.f * (float)(M_PI / 180.f)); // gta fix
-	for(int i = 0;i < 3;i++) euler[i] = (360.f * (float)(M_PI / 180.f)) - euler[i]; // gta fix
-	q1.FromAxisAngle(0.0,0.0,1.0,euler[2]);
-	q2.FromAxisAngle(1.0,0.0,0.0,euler[0]);
-	q1.Multiply(q2);
-	SetQuaternion(q1.X,q1.Y,q1.Z,q1.W);
-	// get real speed
-	moving_speed = step / 1200;
-	// now speed = 1.0 per 50 ms
-	// we need speed per 1 min
-	// 1 min = 60 sec = 60_000 ms
-	// now speed 1.0 per 1/1200 min
-	// find new speed: (step / 1200) * v* ? try...
-	// get current speed vector
-	moving_vector[0] *= moving_speed;
-	moving_vector[1] *= moving_speed;
-	moving_vector[2] *= moving_speed;
+	float pX,pY,pZ,vX,vY,vZ;
+	// coords
+	GetPosition(&pX,&pY,&pZ);
+	// move to
+	vX = x - pX;
+	vY = y - pY;
+	vZ = z - pZ;
 	// velocity
-	SetVelocity(moving_vector[0],moving_vector[1],moving_vector[2]);
-	// state
-	SetState(NPC_STATE_ONFOOT);
-	// set info
+	moving_velocity = velocity;
+	// distance
+	moving_distance = sqrt((vX*vX) + (vY*vY) + (vZ*vZ));
+	// fix NULL distance
+	if(abs(moving_distance) < 0.00001f) moving_distance = 0.000001f;
+	// fix vector by velocity len
+	vX = (vX / moving_distance) * moving_velocity;
+	vY = (vY / moving_distance) * moving_velocity;
+	vZ = (vZ / moving_distance) * moving_velocity;
+	// moving vector
+	moving_vector[0] = vX * VELOCITY_DISTANCE;
+	moving_vector[1] = vY * VELOCITY_DISTANCE;
+	moving_vector[2] = vZ * VELOCITY_DISTANCE;
+	// new velocity len
+	moving_velocity = sqrt((moving_vector[0]*moving_vector[0]) + (moving_vector[1]*moving_vector[1]) + (moving_vector[2]*moving_vector[2]));
+	// get quaternion of rotation
+	Quaternion quat;
+	if(xyz_rotate) quat.FromVector(vX,vY,vZ);
+	else quat.FromVector(vX,vY,0.0);
+	// set data
+	SetQuaternion(quat.X,quat.Y,quat.Z,quat.W);
+	SetVelocity(vX,vY,vZ);
 	moving_state = true;
 	moving_zmap = use_z_map;
 }
-
+/*
 void CNPC::DriveTo(float x,float y,float z,float step,bool use_z_map)
 {
 	// get pos
@@ -797,6 +803,8 @@ void CNPC::DriveTo(float x,float y,float z,float step,bool use_z_map)
 	moving_vector[1] = y - pos_y;
 	moving_vector[2] = z - pos_z;
 	moving_distance = sqrt((moving_vector[0] * moving_vector[0]) + (moving_vector[1] * moving_vector[1]) + (moving_vector[2] * moving_vector[2]));
+	// check distance
+	if(abs(moving_distance) < 0.00001) moving_distance = 0.000001;
 	// get vector
 	moving_vector[0] /= moving_distance;
 	moving_vector[1] /= moving_distance;
@@ -811,7 +819,7 @@ void CNPC::DriveTo(float x,float y,float z,float step,bool use_z_map)
 	q1.Multiply(q2);
 	SetQuaternion(q1.X,q1.Y,q1.Z,q1.W);
 	// get real velocity
-	moving_speed = step / 100;
+	moving_speed = step / 500;
 	// get current velocity vector
 	pos_x = moving_vector[0] * moving_speed;
 	pos_y = moving_vector[1] * moving_speed;
@@ -830,13 +838,62 @@ void CNPC::DriveTo(float x,float y,float z,float step,bool use_z_map)
 	moving_state = true;
 	moving_zmap = use_z_map;
 }
-
+*/
 void CNPC::Stop()
 {
 	moving_state = false;
-	moving_speed = 0.0;
+	//moving_speed = 0.0;
 	SetVelocity(0.0,0.0,0.0);
 	SetKeys(0,0,0);
+}
+
+/*
+ *		AIM
+ */
+void CNPC::SetAimByWeapon(int weaponid,float tx,float ty,float tz)
+{
+	float x,y,z;
+	float fv[3];
+	float len;
+	GetPosition(&x,&y,&z);
+	z += 0.7f;
+	fv[0] = tx - x;
+	fv[1] = ty - y;
+	fv[2] = tz - z;
+	// z angle
+	float a = (atan2f(fv[1],fv[0]) * (180.0f / 3.14159265358979323846f)) + 270.0f;
+	if(a > 360.0f) a -= 360.0f;
+	// create vector
+	len = sqrt((fv[0] * fv[0]) + (fv[1] * fv[1]) + (fv[2] * fv[2]));
+	fv[0] /= len;
+	fv[1] /= len;
+	fv[2] /= len;
+	// z camera angle
+	float z_aim = -acos((fv[0] * fv[0]) + (fv[1] * fv[1]));
+	SetCameraZAim(z_aim);
+	// aim fix
+	switch(weaponid) 
+	{
+		case WEAPON_SNIPER:
+		case WEAPON_ROCKETLAUNCHER:
+		case WEAPON_HEATSEEKER: 
+			break;
+		case WEAPON_RIFLE: 
+			AdjustVector(fv, -0.016204f, -0.009899f, -0.047177f);
+			break;
+		case WEAPON_AK47:
+		case WEAPON_M4:
+			AdjustVector(fv, -0.026461f, -0.013070f, -0.069079f);
+			break;
+		default:
+			AdjustVector(fv, -0.043949f, -0.015922f, -0.103412f);
+			break;
+	}
+	// set data
+	SetCameraPos(x,y,z);
+	SetCameraFrontVector(fv[0],fv[1],fv[2]);
+	// z aim
+	SetAngle(a);
 }
 
 /*
@@ -982,6 +1039,18 @@ void CNPC::StopRecordingPlayback(int reason)
 	}
 }
 
+void CNPC::ApplySync(unsigned long type,unsigned char state)
+{
+	double time = microtime();
+
+	if((time - LastUpdate) > 0.1) 
+	{
+		local_class->SyncType = type;
+		LastUpdate = time;
+	}
+	local_class->State = state;
+}
+
 /*
  *		THREAD
  */
@@ -1007,27 +1076,35 @@ void CNPC::Sync()
 				// get current pos
 				float x,y,z;
 				GetPosition(&x,&y,&z);
+
 				// move coords
-				x += moving_vector[0];
-				y += moving_vector[1];
-				if(moving_zmap)
+				if(moving_distance > moving_velocity)
 				{
-					z = GetZCoord(x,y) + 0.5f;
+					x += moving_vector[0];
+					y += moving_vector[1];
+					if(moving_zmap) z = GetZCoord(x,y) + 0.5f;
+					else z += moving_vector[2];
 				}
-				else z += moving_vector[2];
+				else
+				{
+					x += moving_vector[0] * (moving_distance / moving_velocity);
+					y += moving_vector[1] * (moving_distance / moving_velocity);
+					if(moving_zmap) z = GetZCoord(x,y) + 0.5f;
+					else z += moving_vector[2] * (moving_distance / moving_velocity);
+				}
 				// set coords
 				SetPosition(x,y,z);
-				moving_distance -= moving_speed;
-				if(moving_distance <= 0.0)
+				// change move steps
+				moving_distance -= moving_velocity;
+				// check path complete
+				if(moving_distance <= 0.0f)
 				{
 					Stop();
-					SetKeys(0,0,0);
-					SetVelocity(0.0,0.0,0.0);
 					// callback
 					pCallbacks->MovingComplete(local_id);
 				}
 			}
-
+			/*
 			if((knock_vector[0] != 0.0f) || (knock_vector[1] != 0.0f) || (knock_vector[2] != 0.0f))
 			{
 				if(sqrt((knock_vector[0] * knock_vector[0]) + (knock_vector[1] * knock_vector[1]) + (knock_vector[2] * knock_vector[2])) < 0.1f)
@@ -1049,9 +1126,8 @@ void CNPC::Sync()
 				knock_vector[1] /= 1.05f;
 				knock_vector[2] /= 1.05f;
 			}
-
-			local_class->SyncType = UPDATE_TYPE_ONFOOT;
-			local_class->State = PLAYER_STATE_ONFOOT;
+			*/
+			ApplySync(UPDATE_TYPE_ONFOOT,PLAYER_STATE_ONFOOT);
 			break;
 		}
 	case NPC_STATE_DRIVER:
@@ -1062,40 +1138,43 @@ void CNPC::Sync()
 				float x,y,z;
 				GetPosition(&x,&y,&z);
 				// move coords
-				x += moving_vector[0];
-				y += moving_vector[1];
-				if(moving_zmap)
+				if(moving_distance > moving_velocity)
 				{
-					z = GetZCoord(x,y) + 0.5f;
+					x += moving_vector[0];
+					y += moving_vector[1];
+					if(moving_zmap) z = GetZCoord(x,y) + 0.5f;
+					else z += moving_vector[2];
 				}
-				else z += moving_vector[2];
+				else
+				{
+					x += moving_vector[0] * (moving_distance / moving_velocity);
+					y += moving_vector[1] * (moving_distance / moving_velocity);
+					if(moving_zmap) z = GetZCoord(x,y) + 0.5f;
+					else z += moving_vector[2] * (moving_distance / moving_velocity);
+				}
 				// set coords
 				SetPosition(x,y,z);
-				moving_distance -= moving_speed;
-				if(moving_distance <= 0.0)
+				// change move steps
+				moving_distance -= moving_velocity;
+				// check path complete
+				if(moving_distance <= 0.0f)
 				{
 					Stop();
-					SetVelocity(0.0,0.0,0.0);
-					SetKeys(0,0,0);
 					// callback
 					pCallbacks->MovingComplete(local_id);
 				}
 			}
-
-			local_class->SyncType = UPDATE_TYPE_INCAR;
-			local_class->State = PLAYER_STATE_DRIVER;
+			ApplySync(UPDATE_TYPE_INCAR,PLAYER_STATE_DRIVER);
 			break;
 		}
 	case NPC_STATE_PASSENGER:
 		{
-			local_class->SyncType = UPDATE_TYPE_PASSENGER;
-			local_class->State = PLAYER_STATE_PASSENGER;
+			ApplySync(UPDATE_TYPE_PASSENGER,PLAYER_STATE_PASSENGER);
 			break;
 		}
 	case NPC_STATE_DEATH:
 		{
-			local_class->SyncType = UPDATE_TYPE_ONFOOT;
-			local_class->State = PLAYER_STATE_ONFOOT;
+			ApplySync(UPDATE_TYPE_ONFOOT,PLAYER_STATE_ONFOOT);
 			break;
 		}
 	case NPC_STATE_PLAYBACK:
@@ -1106,12 +1185,15 @@ void CNPC::Sync()
 				{
 				case PLAYER_RECORDING_TYPE_DRIVER:
 					{
+						// save vehicle id
+						unsigned short vid = local_class->InCarSync.VehicleId;
 						// set data
 						local_class->InCarSync = playback_CurrInCarData;
 						SetPosition(playback_CurrInCarData.Position[0],playback_CurrInCarData.Position[1],playback_CurrInCarData.Position[2]);
+						// load vehicle id
+						local_class->InCarSync.VehicleId = vid;
 						// apply to sync
-						local_class->SyncType = UPDATE_TYPE_INCAR;
-						local_class->State = PLAYER_STATE_DRIVER;
+						ApplySync(UPDATE_TYPE_INCAR,PLAYER_STATE_DRIVER);
 						break;
 					}
 				case PLAYER_RECORDING_TYPE_ONFOOT:
@@ -1120,8 +1202,7 @@ void CNPC::Sync()
 						local_class->FootSync = playback_CurrOnFootData;
 						SetPosition(playback_CurrOnFootData.Position[0],playback_CurrOnFootData.Position[1],playback_CurrOnFootData.Position[2]);
 						// apply to sync
-						local_class->SyncType = UPDATE_TYPE_ONFOOT;
-						local_class->State = PLAYER_STATE_ONFOOT;
+						ApplySync(UPDATE_TYPE_ONFOOT,PLAYER_STATE_ONFOOT);
 						break;
 					}
 				}
@@ -1223,11 +1304,11 @@ int CNPC::VehicleDamage(int a_id,float cp_x,float cp_y,float cp_z,float f_x,floa
 	int		part;
 	// npc pos
 	GetPosition(&np_x,&np_y,&np_z);
-	// get len
 	tmp_x = np_x - cp_x;
 	tmp_y = np_y - cp_y;
 	tmp_z = np_z - cp_z;
-	d_len = sqrt((tmp_x * tmp_x) + (tmp_y * tmp_y) + (tmp_z * tmp_z));
+	// get distance of vector for check
+	d_len = ((tmp_x / f_x) + (tmp_y / f_y)) / 2.f;
 	// switch type
 	switch(type)
 	{

@@ -3,7 +3,7 @@
  *	License read in license.txt
  */
 
-#define PLUGIN_VERSION			"0.3.1 R3"
+#define PLUGIN_VERSION			"0.3.2 R4"
 
 // plugin
 void **ppPluginData;

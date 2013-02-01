@@ -15,6 +15,7 @@ public:
 	void ToAxisAngle(float * axis_x,float * axis_y,float * axis_z,float * angle);
 	void FromEuler(float * euler);
 	void ToEuler(float * euler);
+	void FromVector(float vX,float vY,float vZ);
 	void Multiply(Quaternion a);
 
 	// vars

@@ -30,14 +30,8 @@
     <Filter Include="Source Files\utils">
       <UniqueIdentifier>{7e2d4090-16b9-4e72-896f-9d52b336746c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\modules">
-      <UniqueIdentifier>{492e6a94-8842-41c7-af17-1b80957cf942}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="callbacks.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CNPC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -45,12 +39,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="natives.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="threads.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SDK\amxplugin.cpp">
@@ -71,17 +59,35 @@
     <ClCompile Include="static_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes.cpp">
+    <ClCompile Include="CNodeManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\009%27s files\C++ projects\Controllable NPC SA-MP 0.3.1\plugin\modules\nodes.cpp">
-      <Filter>Source Files\modules</Filter>
+    <ClCompile Include="CNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CZMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CCallbacks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\time.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\utils.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="CNodePath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="path_calc.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="callbacks.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CNPC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -98,12 +104,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="os.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="threads.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SDK\plugin.h">
@@ -151,10 +151,31 @@
     <ClInclude Include="SAMP\address.h">
       <Filter>Header Files\SAMP</Filter>
     </ClInclude>
-    <ClInclude Include="Nodes.h">
+    <ClInclude Include="NodesStructs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NodesStructs.h">
+    <ClInclude Include="CNodeManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CZMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CCallbacks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\time.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\utils.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="CNodePath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="path_calc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
