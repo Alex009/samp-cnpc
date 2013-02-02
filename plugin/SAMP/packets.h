@@ -58,16 +58,16 @@ struct Packet_InCar // 0x86 - 0xC5
 
 struct Packet_Passanger // 0xC5 - 0xDD
 {
-	unsigned short	VehicleId; // 0xC5
-	unsigned char	Seat : 6; // 0xC7
-	unsigned char	DriveBy : 2; 
-	unsigned char	Weapon; // 0xC8
-	unsigned char	Health; // 0xC9
-	unsigned char	Armour; // 0xCA
-	unsigned short	KeysLR; // 0xCB
-	unsigned short	KeysUD; // 0xCD
-	unsigned short	KeysOther; // 0xCF
-	float			Position[3]; // 0xD1
-};	// 0xDD
+	unsigned short	VehicleId; // 0xC5 - 0x0
+	unsigned char	Seat : 6; // 0xC7 - 0x2
+	unsigned char	DriveBy : 2;
+	unsigned char	Weapon; // 0xC8 - 0x3
+	unsigned char	Health; // 0xC9 - 0x4
+	unsigned char	Armour; // 0xCA - 0x5
+	unsigned short	KeysLR; // 0xCB - 0x6
+	unsigned short	KeysUD; // 0xCD - 0x8
+	unsigned short	KeysOther; // 0xCF - 0xA
+	float			Position[3]; // 0xD1 - 0xC
+};	// 0x18
 
 #pragma pack(pop)

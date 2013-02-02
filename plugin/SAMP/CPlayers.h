@@ -15,6 +15,6 @@ public:
 	CPlayers();
 	~CPlayers();
 
-	unsigned char	unknown[0x12504];
-	CPlayer*		player[MAX_PLAYERS];	// 0x12504
+	unsigned char	unknown[0x12CD4];
+	CPlayer*		player[MAX_PLAYERS];	// 0x12CD4
 };

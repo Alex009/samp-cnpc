@@ -19,12 +19,12 @@ public:
 	~CPlayer();
 	
 	// vars
-	unsigned char		IsStreamed[MAX_PLAYERS];// 0x0
-	unsigned char		unk_1[0x1FE0];			// 0x1F4
-	Packet_Aim			AimSync;				// 0x21D4
-	Packet_InCar		InCarSync;				// 0x21F3
-	Packet_Passanger	PassangerSync;			// 0x2232
-	Packet_Foot			FootSync;				// 0x224A
+	Packet_Aim			AimSync;				// 0x0
+	Packet_InCar		InCarSync;				// 0x1F
+	Packet_Passanger	PassangerSync;			// 0x5E
+	Packet_Foot			FootSync;				// 0x76
+	unsigned char		IsStreamed[MAX_PLAYERS];
+	unsigned char		unk_1[0x1FE0];			
 	unsigned char		unk_2[0x93];			// 0x228E
 	float				Position[3];			// 0x2321
 	float				Health;					// 0x232D
