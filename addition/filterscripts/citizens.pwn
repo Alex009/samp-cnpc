@@ -1,7 +1,7 @@
 /*
 *	Created:			12.04.10
 *	Author:				009
-*	Last Modifed:       14.07.10
+*	Last Modifed:       02.02.13
 *	Description:		Citizens in SA:MP
 */
 
@@ -14,7 +14,7 @@
 // --------------------------------------------------
 // defines
 // --------------------------------------------------
-#define VERSION             "0.2"
+#define VERSION             "0.3"
 
 #define ONLY_LOS_SANTOS
 
@@ -77,6 +77,11 @@ new npc[CITIZENS_COUNT],
 #endif
 
 // --------------------------------------------------
+// forwards
+// --------------------------------------------------
+forward RespawnCitizen(npcid);
+
+// --------------------------------------------------
 // publics
 // --------------------------------------------------
 public OnFilterScriptInit()
@@ -98,82 +103,12 @@ public OnFilterScriptInit()
 	    npc[i] = FindLastFreeSlot();
 	    // create npc
 	    CreateNPC(npc[i],"Citizen");
-	    // randomize node
-		do NPCNodeData[i][nNodeId] = AllowedZones[ random(sizeof(AllowedZones)) ];
-		while(!TrafficNodes[ NPCNodeData[i][nNodeId] ]);
-		// randomize type of path
-		if(TrafficNodesHeader[ NPCNodeData[i][nNodeId] ][1] == 0) NPCNodeData[i][nPathType] = NODE_TYPE_PED;
-		else if(TrafficNodesHeader[ NPCNodeData[i][nNodeId] ][2] == 0) NPCNodeData[i][nPathType] = NODE_TYPE_VEHICLE;
-		else if(random(100) > 30) NPCNodeData[i][nPathType] = NODE_TYPE_PED;
-		else NPCNodeData[i][nPathType] = NODE_TYPE_VEHICLE;
-		// randomize point
-		rpoint:
-
-		switch(NPCNodeData[i][nPathType])
-		{
-			case NODE_TYPE_PED: NPCNodeData[i][nPointId] = TrafficNodesHeader[ NPCNodeData[i][nNodeId] ][1] + random(TrafficNodesHeader[ NPCNodeData[i][nNodeId] ][2] - 1) + 1;
-			case NODE_TYPE_VEHICLE: NPCNodeData[i][nPointId] = random(TrafficNodesHeader[ NPCNodeData[i][nNodeId] ][1] - 1);
-		}
-		// set point and get coords
-		SetNodePoint(TrafficNodes[ NPCNodeData[i][nNodeId] ],NPCNodeData[i][nPointId]);
-		GetNodePointPos(TrafficNodes[ NPCNodeData[i][nNodeId] ],floattmp[0],floattmp[1],floattmp[2]);
-		if(floattmp[2] > 800.0) // is coord for interior
-		{
-			goto rpoint;
-		}
-		floattmp[2] += Z_CORRECTION; // correction
 	    // find valid skin
 		do inttmp = random(300);
 		while(!IsValidSkin(inttmp));
 		// spawn on this point
-		SetSpawnInfo(npc[i],0,inttmp,floattmp[0],floattmp[1],floattmp[2],0.0,0,0,0,0,0,0);
+		SetSpawnInfo(npc[i],0,inttmp,0.0,0.0,0.0,0.0,0,0,0,0,0,0);
 		SpawnNPC(npc[i]);
-		// vehicle
-		if(NPCNodeData[i][nPathType] == NODE_TYPE_VEHICLE)
-		{
-		    inttmp = GetNodePointType(TrafficNodes[ NPCNodeData[i][nNodeId] ]);
-			switch(inttmp)
-			{
-				case 1: // car
-				{
-					do inttmp = (random(212) + 400);
-					while(!IsVehicleCar(inttmp));
-					NPCNodeData[i][nVehicleId] = AddStaticVehicle(inttmp,floattmp[0],floattmp[1],floattmp[2],0.0,-1,-1);
-					PutNPCInVehicle(npc[i],NPCNodeData[i][nVehicleId],0);
-				}
-				case 2: // boat
-				{
-					do inttmp = (random(212) + 400);
-					while(!IsVehicleBoat(inttmp));
-					NPCNodeData[i][nVehicleId] = AddStaticVehicle(inttmp,floattmp[0],floattmp[1],floattmp[2],0.0,-1,-1);
-					PutNPCInVehicle(npc[i],NPCNodeData[i][nVehicleId],0);
-				}
-				default: goto rpoint;
-			}
-		}
-		// get next point
-	    new link = GetNodePointLinkId(TrafficNodes[ NPCNodeData[i][nNodeId] ]);
-	    SetNodeLink(TrafficNodes[ NPCNodeData[i][nNodeId] ],link);
-	    // save last point
-	    NPCNodeData[i][nLastPointId] = NPCNodeData[i][nPointId];
-	    // change point
-	    NPCNodeData[i][nPointId] = GetNodeLinkNodeId(TrafficNodes[ NPCNodeData[i][nNodeId] ]);
-		NPCNodeData[i][nNodeId] = GetNodeLinkAreaId(TrafficNodes[ NPCNodeData[i][nNodeId] ]);
-		// check zone
-		if(ZoneToArray[ NPCNodeData[i][nNodeId] ] == -1)
-		{
-		    goto rpoint;
-		}
-		// get coords
-		SetNodePoint(TrafficNodes[ NPCNodeData[i][nNodeId] ],NPCNodeData[i][nPointId]);
-		GetNodePointPos(TrafficNodes[ NPCNodeData[i][nNodeId] ],floattmp[0],floattmp[1],floattmp[2]);
-		floattmp[2] += Z_CORRECTION; // correction
-        // go to this point
-		switch(NPCNodeData[i][nPathType])
-		{
-			case NODE_TYPE_PED: NPC_WalkTo(npc[i],floattmp[0],floattmp[1],floattmp[2],0);
-			case NODE_TYPE_VEHICLE: NPC_DriveTo(npc[i],floattmp[0],floattmp[1],floattmp[2],VEHICLES_SPEED,0);
-		}
 	}
     print("Citizens " VERSION " by 009 loaded.");
     return 1;
@@ -194,6 +129,10 @@ public OnFilterScriptExit()
     return 1;
 }
 
+public RespawnCitizen(npcid)
+{
+	SpawnNPC(npcid);
+}
 
 // -----------------------------------------------------------------------------
 //                                  Plugin's callbacks
@@ -201,7 +140,14 @@ public OnFilterScriptExit()
 
 public OnNPCDeath(npcid)
 {
-
+    for(new i = 0;i < CITIZENS_COUNT;i++)
+    {
+        if(npc[i] == npcid)
+		{
+		    SetTimerEx("RespawnCitizen",5000,0,"d",npcid);
+			return;
+		}
+    }
 }
 
 public OnNPCGetDamage(npcid,playerid,Float:health_loss,bodypart)
@@ -211,7 +157,88 @@ public OnNPCGetDamage(npcid,playerid,Float:health_loss,bodypart)
 
 public OnNPCSpawn(npcid)
 {
+	new id = -1;
+    for(new i = 0;i < CITIZENS_COUNT;i++)
+    {
+        if(npc[i] == npcid)
+		{
+			id = i;
+			break;
+		}
+    }
+    if(id == -1) return 1;
+    
 	SetPlayerColor(npcid,0xFFFFFF00);
+	// randomize node
+	do NPCNodeData[id][nNodeId] = AllowedZones[ random(sizeof(AllowedZones)) ];
+	while(!TrafficNodes[ NPCNodeData[id][nNodeId] ]);
+	// randomize type of path
+	if(TrafficNodesHeader[ NPCNodeData[id][nNodeId] ][1] == 0) NPCNodeData[id][nPathType] = NODE_TYPE_PED;
+	else if(TrafficNodesHeader[ NPCNodeData[id][nNodeId] ][2] == 0) NPCNodeData[id][nPathType] = NODE_TYPE_VEHICLE;
+	else if(random(100) > 30) NPCNodeData[id][nPathType] = NODE_TYPE_PED;
+	else NPCNodeData[id][nPathType] = NODE_TYPE_VEHICLE;
+	// randomize point
+	rpoint:
+	switch(NPCNodeData[id][nPathType])
+	{
+		case NODE_TYPE_PED: NPCNodeData[id][nPointId] = TrafficNodesHeader[ NPCNodeData[id][nNodeId] ][1] + random(TrafficNodesHeader[ NPCNodeData[id][nNodeId] ][2] - 1) + 1;
+		case NODE_TYPE_VEHICLE: NPCNodeData[id][nPointId] = random(TrafficNodesHeader[ NPCNodeData[id][nNodeId] ][1] - 1);
+	}
+	// set point and get coords
+	SetNodePoint(TrafficNodes[ NPCNodeData[id][nNodeId] ],NPCNodeData[id][nPointId]);
+	GetNodePointPos(TrafficNodes[ NPCNodeData[id][nNodeId] ],floattmp[0],floattmp[1],floattmp[2]);
+	if(floattmp[2] > 800.0) // is coord for interior
+	{
+		goto rpoint;
+	}
+	floattmp[2] += Z_CORRECTION; // correction
+	SetNPCPos(npc[id],floattmp[0],floattmp[1],floattmp[2]);
+	// vehicle
+	if(NPCNodeData[id][nPathType] == NODE_TYPE_VEHICLE)
+	{
+	    inttmp = GetNodePointType(TrafficNodes[ NPCNodeData[id][nNodeId] ]);
+		switch(inttmp)
+		{
+			case 1: // car
+			{
+				do inttmp = (random(212) + 400);
+				while(!IsVehicleCar(inttmp));
+				NPCNodeData[id][nVehicleId] = AddStaticVehicle(inttmp,floattmp[0],floattmp[1],floattmp[2],0.0,-1,-1);
+				PutNPCInVehicle(npc[id],NPCNodeData[id][nVehicleId],0);
+			}
+			case 2: // boat
+			{
+				do inttmp = (random(212) + 400);
+				while(!IsVehicleBoat(inttmp));
+				NPCNodeData[id][nVehicleId] = AddStaticVehicle(inttmp,floattmp[0],floattmp[1],floattmp[2],0.0,-1,-1);
+				PutNPCInVehicle(npc[id],NPCNodeData[id][nVehicleId],0);
+			}
+			default: goto rpoint;
+		}
+	}
+	// get next point
+    new link = GetNodePointLinkId(TrafficNodes[ NPCNodeData[id][nNodeId] ]);
+    SetNodeLink(TrafficNodes[ NPCNodeData[id][nNodeId] ],link);
+    // save last point
+    NPCNodeData[id][nLastPointId] = NPCNodeData[id][nPointId];
+    // change point
+    NPCNodeData[id][nPointId] = GetNodeLinkNodeId(TrafficNodes[ NPCNodeData[id][nNodeId] ]);
+	NPCNodeData[id][nNodeId] = GetNodeLinkAreaId(TrafficNodes[ NPCNodeData[id][nNodeId] ]);
+	// check zone
+	if(ZoneToArray[ NPCNodeData[id][nNodeId] ] == -1)
+	{
+	    goto rpoint;
+	}
+	// get coords
+	SetNodePoint(TrafficNodes[ NPCNodeData[id][nNodeId] ],NPCNodeData[id][nPointId]);
+	GetNodePointPos(TrafficNodes[ NPCNodeData[id][nNodeId] ],floattmp[0],floattmp[1],floattmp[2]);
+	floattmp[2] += Z_CORRECTION; // correction
+    // go to this point
+	switch(NPCNodeData[id][nPathType])
+	{
+		case NODE_TYPE_PED: NPC_WalkTo(npc[id],floattmp[0],floattmp[1],floattmp[2],0);
+		case NODE_TYPE_VEHICLE: NPC_DriveTo(npc[id],floattmp[0],floattmp[1],floattmp[2],VEHICLES_SPEED,0);
+	}
     return 1;
 }
 
@@ -226,6 +253,8 @@ public OnNPCMovingComplete(npcid)
 			break;
 		}
     }
+    if(id == -1) return 1;
+    
 	// set cuurent point for geting
 	SetNodePoint(TrafficNodes[ NPCNodeData[id][nNodeId] ],NPCNodeData[id][nPointId]);
     // get next point
