@@ -154,6 +154,7 @@ void SAMP_ThreadComplete()
 	// вызываем калбеки путей
 	CallPathCalculationCallback();
 }
+
 /*
 THREAD_START(NPCDamageThread){
 	// vars
