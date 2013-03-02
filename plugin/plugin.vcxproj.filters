@@ -56,9 +56,6 @@
     <ClCompile Include="utils\3DVector.cpp">
       <Filter>Source Files\utils</Filter>
     </ClCompile>
-    <ClCompile Include="static_data.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CNodeManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -84,6 +81,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="path_calc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCMoving.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCPlayback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCCore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCDamage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\SWeaponData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="demo_mode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -176,6 +191,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="path_calc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCMoving.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCPlayback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCDamage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\SWeaponData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\demo_mode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -48,8 +48,8 @@ CNode::CNode(char* nodename)
 
 CNode::~CNode()
 {
-	if(path_data) delete path_data;
-	if(link_data) delete link_data;
+	if(path_data) delete [] path_data;
+	if(link_data) delete [] link_data;
 }
 
 void CNode::GetInfo(unsigned long* nodes,unsigned long* vehnodes,unsigned long* pednodes,unsigned long* navinodes)

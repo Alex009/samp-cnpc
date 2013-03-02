@@ -47,6 +47,7 @@ THREAD_START(PathCalculation){
 		pNodePaths[pathid] = new CNodePath(path,pathlen,pathdist);
 		// чистим память
 		if(path) delete [] path;
+		if(data) delete data;
 		// ожидаем свободного стека
 		while(stack_used) SLEEP(5);
 		// занимаем стек

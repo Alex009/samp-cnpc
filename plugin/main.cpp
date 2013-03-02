@@ -3,6 +3,8 @@
  *	License read in license.txt
  */
 
+#define DEMO_MODE
+
 // SDK
 #include "SDK/amx/amx.h"
 #include "SDK/plugincommon.h"
@@ -19,7 +21,10 @@
 #include "hooks.h"
 #include "natives.h"
 #include "defines.h"
-#include "os.h"
+
+#ifdef DEMO_MODE
+	#include "demo_mode.h"
+#endif
 
 CNPC*			pNPC[MAX_NPCS];
 CNode*			pNodes[MAX_NODES];
@@ -30,8 +35,7 @@ CHooks*			pHooks = NULL;
 CSAMP*			pSaMp = NULL;
 CCallbacks*		pCallbacks = NULL;
 unsigned short	MaxPlayers;
-char			VisualDeath = 1;
-int				WeaponReload[MAX_PLAYERS];
+bool			VisualDeath = true;
 AMX*			pAMX;
 
 float GetZCoord(float x,float y)
@@ -56,23 +60,32 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData )
 	RaknetHandle = (RaknetHandle_t)ppData[PLUGIN_DATA_RAKNET_HANDLE];
 	AmxLoadFilterScript = (AmxLoadFilterScript_t)ppData[PLUGIN_DATA_LOAD_FILTERSCRIPT];
 	AmxUnloadFilterScript = (AmxUnloadFilterScript_t)ppData[PLUGIN_DATA_UNLOAD_FILTERSCRIPT];
-
+	
+	// plugin load
+	logprintf("================");
 	// null data
 	for(unsigned short i = 0;i < MAX_NPCS;i++) pNPC[i] = NULL;
 	for(unsigned short i = 0;i < MAX_NODES;i++) pNodes[i] = NULL;
 	for(unsigned short i = 0;i < MAX_NODE_PATHS;i++) pNodePaths[i] = NULL;
+	// init static data
+	CNPCDamage::Init();
 	// hooks load
 	pHooks = new CHooks(reinterpret_cast<unsigned long>(ppData[PLUGIN_DATA_CSAMP_HANDLE]));
 	// callbacks
 	pCallbacks = new CCallbacks();
 	// max players
 	MaxPlayers = pHooks->GetMaxPlayers();
-	// plugin load
-	logprintf("================");
+	// data
 	logprintf("Controllable NPC v " PLUGIN_VERSION);
 	logprintf("by 009");
 	logprintf("for SA-MP " SAMP_VERSION " server");
 	logprintf("max players detected: %d",MaxPlayers);
+	// demo mode
+#ifdef DEMO_MODE
+	InitDemoMode();
+	logprintf("It's demo version, please buy full version");
+	logprintf("Information: http://alekseymikhailov.blogspot.com/");
+#endif
 	// complete
 	logprintf("================");
 

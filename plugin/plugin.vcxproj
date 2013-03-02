@@ -97,6 +97,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCCore.cpp" />
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCDamage.cpp" />
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCMoving.cpp" />
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCPlayback.cpp" />
+    <ClCompile Include="demo_mode.cpp" />
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\SWeaponData.cpp" />
     <ClCompile Include="CNodePath.cpp" />
     <ClCompile Include="path_calc.cpp" />
     <ClCompile Include="utils\time.cpp" />
@@ -109,7 +115,6 @@
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="natives.cpp" />
-    <ClCompile Include="static_data.cpp" />
     <ClCompile Include="thread.cpp" />
     <ClCompile Include="SDK\amxplugin.cpp" />
     <ClCompile Include="SDK\amx\getch.c" />
@@ -117,6 +122,12 @@
     <ClCompile Include="utils\quaternion.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCCore.h" />
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCDamage.h" />
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCMoving.h" />
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCPlayback.h" />
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\demo_mode.h" />
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\SWeaponData.h" />
     <ClInclude Include="CNodePath.h" />
     <ClInclude Include="path_calc.h" />
     <ClInclude Include="utils\time.h" />

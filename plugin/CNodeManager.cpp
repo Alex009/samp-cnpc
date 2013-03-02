@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "CNodeManager.h"
 #include "CNode.h"
+#include "os.h"
 
 CNodeManager::CNodeManager()
 {
@@ -464,6 +465,8 @@ bool CNodeManager::CalcPathByNodes(unsigned char* areas,unsigned char nodetype,u
 				min_dist = nodes[i].ni_dist;
 			}
 		}
+		// чтобы не грузить процессор при большом расчете
+		SLEEP(1);
 	}
 	// проверяем достигли мы конца пути
 	if(last != endnodeid)

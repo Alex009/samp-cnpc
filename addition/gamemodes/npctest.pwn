@@ -1,7 +1,7 @@
 /*
 *	Created:			12.04.10
 *	Author:				009
-*	Last Modifed:		06.09.12
+*	Last Modifed:		17.02.13
 *	Description:		Controllable NPC's test mode
 */
 
@@ -520,11 +520,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	        switch(listitem)
 	        {
 	            // walk
-	            case 0: return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER_WALK,DIALOG_STYLE_INPUT,"Enter data","Enter \"is z map\" and coords (example: 0.0 0.0 0.0) or only \"is z map\" for get your coords","Continue","Cancel");
+	            case 0: return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER_WALK,DIALOG_STYLE_INPUT,"Enter data","Enter speed, \"is z map\" and coords (example: 0.0 0.0 0.0) or only speed, \"is z map\" for get your coords","Continue","Cancel");
 	            // run
-	            case 1: return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER_RUN,DIALOG_STYLE_INPUT,"Enter data","Enter \"is z map\" and coords (example: 0.0 0.0 0.0) or only \"is z map\" for get your coords","Continue","Cancel");
+	            case 1: return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER_RUN,DIALOG_STYLE_INPUT,"Enter data","Enter speed, \"is z map\" and coords (example: 0.0 0.0 0.0) or only speed, \"is z map\" for get your coords","Continue","Cancel");
 	            // sprint
-	            case 2: return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER_SPRINT,DIALOG_STYLE_INPUT,"Enter data","Enter \"is z map\" and coords (example: 0.0 0.0 0.0) or only \"is z map\" for get your coords","Continue","Cancel");
+	            case 2: return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER_SPRINT,DIALOG_STYLE_INPUT,"Enter data","Enter speed, \"is z map\" and coords (example: 0.0 0.0 0.0) or only speed, \"is z map\" for get your coords","Continue","Cancel");
 	            // drive
 	            case 3: return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER_DRIVE,DIALOG_STYLE_INPUT,"Enter data","Enter speed , \"is z map\" and coords (example: 0.0 0.0 0.0) or only speed , \"is z map\" for get your coords","Continue","Cancel");
 	            // look
@@ -718,48 +718,63 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	    {
 	        if(!response) return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER,DIALOG_STYLE_LIST,"Select action",DIALOG_NPC_OTHER_STRING,"Continue","Cancel");
 
+            floattmp[0] = floatstr(strtok(inputtext,idx));
             inttmp[0] = strval(strtok(inputtext,idx));
-			if(!inputtext[idx]) GetPlayerPos(playerid,floattmp[0],floattmp[1],floattmp[2]);
+			if(!inputtext[idx])
+			{
+				GetPlayerPos(playerid,floattmp[1],floattmp[2],floattmp[3]);
+			}
 	        else
 			{
-				for(new i = 0;i < 3;i++) floattmp[i] = floatstr(strtok(inputtext,idx));
+				for(new i = 1;i < 4;i++) floattmp[i] = floatstr(strtok(inputtext,idx));
 			}
-			SetPVarFloat(ActionTo[playerid],"tx",floattmp[0]);
-			SetPVarFloat(ActionTo[playerid],"ty",floattmp[1]);
-			SetPVarFloat(ActionTo[playerid],"tz",floattmp[2]);
-			NPC_WalkTo(ActionTo[playerid],floattmp[0],floattmp[1],floattmp[2],inttmp[0]);
+			SetPVarFloat(ActionTo[playerid],"tx",floattmp[1]);
+			SetPVarFloat(ActionTo[playerid],"ty",floattmp[2]);
+			SetPVarFloat(ActionTo[playerid],"tz",floattmp[3]);
+			if(floattmp[0] == 0) floattmp[0] = SPEED_WALK;
+			NPC_WalkTo(ActionTo[playerid],floattmp[1],floattmp[2],floattmp[3],inttmp[0],floattmp[0]);
             return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER,DIALOG_STYLE_LIST,"Select action",DIALOG_NPC_OTHER_STRING,"Continue","Cancel");
 	    }
 	    case DIALOG_NPC_OTHER_RUN:
 	    {
 	        if(!response) return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER,DIALOG_STYLE_LIST,"Select action",DIALOG_NPC_OTHER_STRING,"Continue","Cancel");
 
+            floattmp[0] = floatstr(strtok(inputtext,idx));
             inttmp[0] = strval(strtok(inputtext,idx));
-			if(!inputtext[idx]) GetPlayerPos(playerid,floattmp[0],floattmp[1],floattmp[2]);
+			if(!inputtext[idx])
+			{
+				GetPlayerPos(playerid,floattmp[1],floattmp[2],floattmp[3]);
+			}
 	        else
 			{
-				for(new i = 0;i < 3;i++) floattmp[i] = floatstr(strtok(inputtext,idx));
+				for(new i = 1;i < 4;i++) floattmp[i] = floatstr(strtok(inputtext,idx));
 			}
-			SetPVarFloat(ActionTo[playerid],"tx",floattmp[0]);
-			SetPVarFloat(ActionTo[playerid],"ty",floattmp[1]);
-			SetPVarFloat(ActionTo[playerid],"tz",floattmp[2]);
-			NPC_RunTo(ActionTo[playerid],floattmp[0],floattmp[1],floattmp[2],inttmp[0]);
+			SetPVarFloat(ActionTo[playerid],"tx",floattmp[1]);
+			SetPVarFloat(ActionTo[playerid],"ty",floattmp[2]);
+			SetPVarFloat(ActionTo[playerid],"tz",floattmp[3]);
+			if(floattmp[0] == 0) floattmp[0] = SPEED_RUN;
+			NPC_RunTo(ActionTo[playerid],floattmp[1],floattmp[2],floattmp[3],inttmp[0],floattmp[0]);
             return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER,DIALOG_STYLE_LIST,"Select action",DIALOG_NPC_OTHER_STRING,"Continue","Cancel");
 	    }
 	    case DIALOG_NPC_OTHER_SPRINT:
 	    {
 	        if(!response) return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER,DIALOG_STYLE_LIST,"Select action",DIALOG_NPC_OTHER_STRING,"Continue","Cancel");
 
+            floattmp[0] = floatstr(strtok(inputtext,idx));
             inttmp[0] = strval(strtok(inputtext,idx));
-			if(!inputtext[idx]) GetPlayerPos(playerid,floattmp[0],floattmp[1],floattmp[2]);
+			if(!inputtext[idx])
+			{
+				GetPlayerPos(playerid,floattmp[1],floattmp[2],floattmp[3]);
+			}
 	        else
 			{
-				for(new i = 0;i < 3;i++) floattmp[i] = floatstr(strtok(inputtext,idx));
+				for(new i = 1;i < 4;i++) floattmp[i] = floatstr(strtok(inputtext,idx));
 			}
-			SetPVarFloat(ActionTo[playerid],"tx",floattmp[0]);
-			SetPVarFloat(ActionTo[playerid],"ty",floattmp[1]);
-			SetPVarFloat(ActionTo[playerid],"tz",floattmp[2]);
-			NPC_SprintTo(ActionTo[playerid],floattmp[0],floattmp[1],floattmp[2],inttmp[0]);
+			SetPVarFloat(ActionTo[playerid],"tx",floattmp[1]);
+			SetPVarFloat(ActionTo[playerid],"ty",floattmp[2]);
+			SetPVarFloat(ActionTo[playerid],"tz",floattmp[3]);
+			if(floattmp[0] == 0) floattmp[0] = SPEED_SPRINT;
+			NPC_SprintTo(ActionTo[playerid],floattmp[1],floattmp[2],floattmp[3],inttmp[0],floattmp[0]);
             return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER,DIALOG_STYLE_LIST,"Select action",DIALOG_NPC_OTHER_STRING,"Continue","Cancel");
 	    }
 	    case DIALOG_NPC_OTHER_DRIVE:
@@ -776,9 +791,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 				for(new i = 1;i < 4;i++) floattmp[i] = floatstr(strtok(inputtext,idx));
 			}
-			SetPVarFloat(ActionTo[playerid],"tx",floattmp[0]);
-			SetPVarFloat(ActionTo[playerid],"ty",floattmp[1]);
-			SetPVarFloat(ActionTo[playerid],"tz",floattmp[2]);
+			SetPVarFloat(ActionTo[playerid],"tx",floattmp[1]);
+			SetPVarFloat(ActionTo[playerid],"ty",floattmp[2]);
+			SetPVarFloat(ActionTo[playerid],"tz",floattmp[3]);
 			NPC_DriveTo(ActionTo[playerid],floattmp[1],floattmp[2],floattmp[3],floattmp[0],inttmp[0]);
             return ShowPlayerDialog(playerid,DIALOG_NPC_OTHER,DIALOG_STYLE_LIST,"Select action",DIALOG_NPC_OTHER_STRING,"Continue","Cancel");
 	    }

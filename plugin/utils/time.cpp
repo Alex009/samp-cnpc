@@ -175,3 +175,18 @@ void microtime(long* sec,long* microsec)
 	*microsec = tp.tv_usec;
 	return;
 }
+
+struct timeval start_tp = {0};
+bool start_tp_avail = false;
+unsigned long GetTimeFromStart()
+{
+	struct timeval tp = {0};
+
+	if(!start_tp_avail)
+	{
+		gettimeofday(&start_tp, 0);
+		start_tp_avail = true;
+	}
+	gettimeofday(&tp, 0);
+	return 1000 * (tp.tv_sec - start_tp.tv_sec) + (tp.tv_usec - start_tp.tv_usec) / 1000;
+}

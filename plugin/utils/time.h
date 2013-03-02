@@ -7,3 +7,4 @@
 
 double microtime();
 void microtime(long* sec,long* microsec);
+unsigned long GetTimeFromStart();

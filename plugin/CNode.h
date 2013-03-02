@@ -18,7 +18,6 @@ public:
 	~CNode();
 
 	void GetInfo(unsigned long* nodes,unsigned long* vehnodes,unsigned long* pednodes,unsigned long* navinodes);
-	// paths
 	void SetPoint(unsigned long pointid);
 	void GetPos(float* x,float* y,float* z);
 	unsigned long GetLinkId();
@@ -36,7 +35,6 @@ public:
 	bool IsRoadBlock1();
 	bool IsParking();
 	bool IsRoadBlock2();
-	// links
 	void SetLink(unsigned long linkid);
 	unsigned short GetLinkAreaId();
 	unsigned long GetLinkNodeId();

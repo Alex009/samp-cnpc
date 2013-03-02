@@ -218,3 +218,53 @@ int GetWeaponType(unsigned int weapon)
 	default: return WEAPON_TYPE_SHOOT;
 	}
 }
+
+void rotate_vector(float& x,float& y,float& z,float angle_xy,float angle_z)
+{
+	float _x = x*cosf(angle_xy) - y*sinf(angle_xy);
+	float _y = x*sinf(angle_xy) + y*cosf(angle_xy);
+	
+	float d = sqrt(_x*_x + _y*_y);
+	
+	float _d = d*cosf(angle_z) - z*sinf(angle_z);
+	float _z = d*sinf(angle_z) + z*cosf(angle_z);
+	
+	float fix = _d / d;
+	
+ 	x = _x * fix;
+	y = _y * fix;
+	z = _z;
+}
+
+float scal_prod(float x1,float y1,float z1,float x2,float y2,float z2)
+{
+	return (x1*x2 + y1*y2 + z1*z2);
+}
+
+void vect_prod(float x1,float y1,float z1,float x2,float y2,float z2,float* x3,float* y3,float* z3)
+{
+	*x3 = y1*z2 - y2*z1;
+	*y3 = z1*x2 - z2*x1;
+	*z3 = x1*y2 - x2*y1;
+}
+
+bool GetDistanceFromRayToPoint(float rsx,float rsy,float rsz,float rvx,float rvy,float rvz,float px,float py,float pz,float* result)
+{
+	float wx,wy,wz;
+	float rx,ry,rz;
+	float scal;
+
+	wx = px - rsx;
+	wy = py - rsy;
+	wz = pz - rsz;
+
+	scal = scal_prod(wx,wy,wz,rvx,rvy,rvz);
+
+	if(scal < 0) return false;
+	else
+	{
+		vect_prod(rvx,rvy,rvz,wx,wy,wz,&rx,&ry,&rz);
+		*result = sqrt(rx*rx + ry*ry + rz*rz);
+		return true;
+	}
+}

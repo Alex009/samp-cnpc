@@ -11,11 +11,11 @@ class CHooks
 public:
 	// functions
 	CHooks(unsigned long s_version);
-	~CHooks();
 
 	void ClientConnect(void* players,int id,char* name);
 	void ClientDisconnect(void* players,int id,int reason);
 	void ClientSpawn(void* player);
 	void ClientDeath(void* player,int reason,int killerid);
+	void PlayerStreamOut(void* player,int forplayerid);
 	unsigned short GetMaxPlayers();
 };

@@ -13,20 +13,17 @@
 class CCallbacks
 {
 public:
-	CCallbacks() ;
-	~CCallbacks();
-
-	int GetDamage(int npcid,int attacker,float damage,int bpart);
-	int MovingComplete(int npcid);
-	int PlaybackEnd(int npcid,int reason);
-	int Spawn(int npcid);
-	int Death(int npcid,int killer,int reason);
-	int Custom(char* callback,void* params,int params_count);
+	CCallbacks();
+	int GetDamage(unsigned short npcid,unsigned short attacker,float damage,unsigned char bpart);
+	int MovingComplete(unsigned short npcid);
+	int PlaybackEnd(unsigned short npcid,unsigned char reason);
+	int Spawn(unsigned short npcid);
+	int Death(unsigned short npcid,unsigned short killer,unsigned char reason);
 	int PathCalculated(unsigned short pathid);
-
+	int Custom(char* callback,void* params,int params_count);
 	void CallbacksOnAMXLoad(AMX* amx);
 	void CallbacksOnAMXUnLoad(AMX* amx);
 
-	// vars
+private:
 	AMX* SampObjects[17];
 };

@@ -52,6 +52,11 @@
 
 #define INVALID_NODE_PATH						0xFFFF
 
+
+#define SPEED_WALK			0.021
+#define SPEED_RUN			0.055
+#define SPEED_SPRINT		0.085
+
 //
 //	Natives
 //
@@ -76,9 +81,9 @@ native SetNPCFacingAngle(npcid,Float:angle);
 native Float:GetNPCFacingAngle(npcid);
 native SetNPCVelocity(npcid,Float:X,Float:Y,Float:Z);
 native GetNPCVelocity(npcid,&Float:X,&Float:Y,&Float:Z);
-native NPC_WalkTo(npcid,Float:X,Float:Y,Float:Z,is_z_map);
-native NPC_RunTo(npcid,Float:X,Float:Y,Float:Z,is_z_map);
-native NPC_SprintTo(npcid,Float:X,Float:Y,Float:Z,is_z_map);
+native NPC_WalkTo(npcid,Float:X,Float:Y,Float:Z,is_z_map,Float:speed=SPEED_WALK);
+native NPC_RunTo(npcid,Float:X,Float:Y,Float:Z,is_z_map,Float:speed=SPEED_RUN);
+native NPC_SprintTo(npcid,Float:X,Float:Y,Float:Z,is_z_map,Float:speed=SPEED_SPRINT);
 native NPC_LookAt(npcid,Float:X,Float:Y,Float:Z);
 native NPC_AimAt(npcid,Float:X,Float:Y,Float:Z);
 native NPC_ShootAt(npcid,Float:X,Float:Y,Float:Z);

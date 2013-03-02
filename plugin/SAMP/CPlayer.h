@@ -23,9 +23,11 @@ public:
 	Packet_InCar		InCarSync;				// 0x1F
 	Packet_Passanger	PassangerSync;			// 0x5E
 	Packet_Foot			FootSync;				// 0x76
-	unsigned char		IsStreamed[MAX_PLAYERS];
-	unsigned char		unk_1[0x1FE0];			
-	unsigned char		unk_2[0x93];			// 0x228E
+	unsigned char		unk_1[0x8B];			// 0xBA
+	unsigned char		IsStreamed[MAX_PLAYERS];// 0x145
+	unsigned char		unk_2[0x1FB8];			// 0x339
+	unsigned long		StreamedCount;			// 0x22F1
+	unsigned char		unk_2_[0x2C];			// 0x22F5
 	float				Position[3];			// 0x2321
 	float				Health;					// 0x232D
 	float				Armour;					// 0x2331

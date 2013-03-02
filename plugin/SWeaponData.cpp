@@ -1,0 +1,63 @@
+/*
+ *	Copyright (C) 2013 Alex009
+ *	License read in license.txt
+ *	Description: weapons information
+ */
+
+#include "SWeaponData.h"
+
+SWeaponData	WeaponData[MAX_WEAPONS] = 
+{
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_BRASSKNUCKLE
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_GOLFCLUB
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_NITESTICK
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_KNIFE
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_BAT
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_SHOVEL
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_POOLSTICK
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_KATANA
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_CHAINSAW
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_DILDO
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_DILDO2
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_VIBRATOR
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_VIBRATOR2
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_FLOWER
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_CANE
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_GRENADE
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_TEARGAS
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_MOLTOV
+	{0,{0.0f,0.0f,0.0f},{0.0f,0.0f},0.0f,0.0f}, // nothing
+	{0,{0.0f,0.0f,0.0f},{0.0f,0.0f},0.0f,0.0f}, // nothing
+	{0,{0.0f,0.0f,0.0f},{0.0f,0.0f},0.0f,0.0f}, // nothing
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.04f,0.1f},25.0f,0.25f}, // WEAPON_COLT45
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.042f,0.105f},25.0f,0.25f}, // WEAPON_SILENCED
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.042f,0.105f},40.0f,0.5f}, // WEAPON_DEAGLE
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.042f,0.105f},30.0f,0.5f}, // WEAPON_SHOTGUN
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.042f,0.105f},30.0f,1.0f}, // WEAPON_SAWEDOFF
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.042f,0.105f},30.0f,0.25f}, // WEAPON_SHOTGSPA
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.042f,0.105f},10.0f,0.15f}, // WEAPON_UZI
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.042f,0.105f},10.0f,0.15f}, // WEAPON_MP5
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.029f,0.07f},20.0f,0.15f}, // WEAPON_AK47
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.029f,0.07f},20.0f,0.15f}, // WEAPON_M4
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.042f,0.105f},10.0f,0.15f}, // WEAPON_TEC9
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.019f,0.047f},20.0f,0.5f}, // WEAPON_RIFLE
+	{WEAPON_TYPE_SHOOT,{0.0f,0.0f,0.0f},{0.0f,0.0f},40.0f,1.0f}, // WEAPON_SNIPER
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_ROCKETLAUNCHER
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_HEATSEEKER
+	{WEAPON_TYPE_MELEE,{0.318f,-2.589f,0.0316f},{-0.04f,0.1f},5.0f,1.0f}, // WEAPON_FLAMETHROWER
+	{WEAPON_TYPE_SHOOT,{0.318f,-2.589f,0.0316f},{-0.04f,0.1f},10.0f,0.05f}, // WEAPON_MINIGUN
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_SATCHEL
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_BOMB
+	{WEAPON_TYPE_SPECIAL,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_SPRAYCAN
+	{WEAPON_TYPE_MELEE,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_FIREEXTINGUISHER
+	{WEAPON_TYPE_SPECIAL,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f}, // WEAPON_CAMERA
+	{0,{0.0f,0.0f,0.0f},{0.0f,0.0f},0.0f,0.0f}, // nothing
+	{0,{0.0f,0.0f,0.0f},{0.0f,0.0f},0.0f,0.0f}, // nothing
+	{WEAPON_TYPE_SPECIAL,{0.0f,0.0f,0.0f},{0.0f,0.0f},5.0f,1.0f} // WEAPON_PARACHUTE
+};
+
+
+SWeaponData* GetWeaponData(unsigned char weaponid)
+{
+	return &WeaponData[weaponid - 1];
+}

@@ -34,6 +34,7 @@ CZMap::CZMap(char* _mapname,int _mode)
 CZMap::~CZMap()
 {
 	if(MapFile) fclose(MapFile);
+	if(binarydata) delete [] binarydata;
 }
 
 float CZMap::GetZForCoords(float X,float Y)

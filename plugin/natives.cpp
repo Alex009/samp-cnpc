@@ -24,6 +24,7 @@
 #include "utils/utils.h"
 #include "utils/time.h"
 #include "path_calc.h"
+#include "SWeaponData.h"
 
 extern	CNPC*			pNPC[MAX_NPCS];
 extern	CNode*			pNodes[MAX_NODES];
@@ -31,17 +32,16 @@ extern	CNodeManager*	pNodeManager;
 extern	CNodePath*		pNodePaths[MAX_NODE_PATHS];
 extern	CZMap*			pZMap;
 extern	CSAMP*			pSaMp;
-extern	CHooks*			pHooks;
-extern	char			VisualDeath;
+extern	bool			VisualDeath;
 extern	unsigned short	MaxPlayers;
-extern	int				WeaponReload[MAX_PLAYERS];
-extern	float			WeaponsDamage[MAX_WEAPONS + 2];
-extern	int				WeaponsReloadTime[MAX_WEAPONS + 1];
+
+unsigned char nm_count = 0;
+unsigned char zm_count = 0;
 
 // CreateNPC(NPC:npcid,npcname[]);
 static cell AMX_NATIVE_CALL n_CreateNPC( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	char* temp;
 	amx_StrParam(amx, params[2], temp);
 	if(!pNPC[npcid])
@@ -54,7 +54,7 @@ static cell AMX_NATIVE_CALL n_CreateNPC( AMX* amx, cell* params )
 // DestroyNPC(NPC:npcid);
 static cell AMX_NATIVE_CALL n_DestroyNPC( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		delete pNPC[npcid];
@@ -66,21 +66,21 @@ static cell AMX_NATIVE_CALL n_DestroyNPC( AMX* amx, cell* params )
 // IsValidNPC(NPC:npcid);
 static cell AMX_NATIVE_CALL n_IsValidNPC( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid]) return 1;
 	return 0;
 }
 // GetNPCState(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCState( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
-	if(pNPC[npcid]) return pNPC[npcid]->GetState();
+	unsigned short npcid = (unsigned short)params[1];
+	if(pNPC[npcid]) return (cell)pNPC[npcid]->GetState();
 	return 0;
 }
 // SetNPCPos(NPC:npcid,Float:X,Float:Y,Float:Z);
 static cell AMX_NATIVE_CALL n_SetNPCPos( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
@@ -94,7 +94,7 @@ static cell AMX_NATIVE_CALL n_SetNPCPos( AMX* amx, cell* params )
 // GetNPCPos(NPC:npcid,&Float:X,&Float:Y,&Float:Z);
 static cell AMX_NATIVE_CALL n_GetNPCPos( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x,y,z;
@@ -116,7 +116,7 @@ static cell AMX_NATIVE_CALL n_GetNPCPos( AMX* amx, cell* params )
 // SetNPCQuaternion(NPC:npcid,Float:X,Float:Y,Float:Z,Float:Scal);
 static cell AMX_NATIVE_CALL n_SetNPCQuaternion( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
@@ -131,7 +131,7 @@ static cell AMX_NATIVE_CALL n_SetNPCQuaternion( AMX* amx, cell* params )
 // GetNPCQuaternion(NPC:npcid,&Float:X,&Float:Y,&Float:Z,&Float:Scal);
 static cell AMX_NATIVE_CALL n_GetNPCQuaternion( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x,y,z,s;
@@ -156,7 +156,7 @@ static cell AMX_NATIVE_CALL n_GetNPCQuaternion( AMX* amx, cell* params )
 // SetNPCFacingAngle(NPC:npcid,Float:angle);
 static cell AMX_NATIVE_CALL n_SetNPCFacingAngle( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		pNPC[npcid]->SetAngle(amx_ctof(params[2]));
@@ -167,7 +167,7 @@ static cell AMX_NATIVE_CALL n_SetNPCFacingAngle( AMX* amx, cell* params )
 // Float:GetNPCFacingAngle(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCFacingAngle( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float a = pNPC[npcid]->GetAngle();
@@ -178,7 +178,7 @@ static cell AMX_NATIVE_CALL n_GetNPCFacingAngle( AMX* amx, cell* params )
 // SetNPCVelocity(NPC:npcid,Float:X,Float:Y,Float:Z);
 static cell AMX_NATIVE_CALL n_SetNPCVelocity( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
@@ -192,7 +192,7 @@ static cell AMX_NATIVE_CALL n_SetNPCVelocity( AMX* amx, cell* params )
 // GetNPCVelocity(NPC:npcid,&Float:X,&Float:Y,&Float:Z);
 static cell AMX_NATIVE_CALL n_GetNPCVelocity( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x,y,z;
@@ -211,84 +211,79 @@ static cell AMX_NATIVE_CALL n_GetNPCVelocity( AMX* amx, cell* params )
 	}
 	return 0;
 }
-// NPC_WalkTo(NPC:npcid,Float:X,Float:Y,Float:Z,is_z_map);
+// NPC_WalkTo(NPC:npcid,Float:X,Float:Y,Float:Z,is_z_map,Float:speed);
 static cell AMX_NATIVE_CALL n_NPC_WalkTo( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
 		float y = amx_ctof(params[3]);
 		float z = amx_ctof(params[4]);
 		bool z_map = (params[5]==0?false:true);
-		pNPC[npcid]->GoTo(x,y,z,VELOCITY_LEN_WALK,z_map,false);
-		pNPC[npcid]->SetKeys(KEY_UP,0,KEY_WALK);
-		pNPC[npcid]->SetState(NPC_STATE_ONFOOT);
-		return 1;
+		float speed = amx_ctof(params[6]);
+		if(pNPC[npcid]->Move(x,y,z,speed,z_map,false))
+		{
+			pNPC[npcid]->SetKeys(KEY_UP,0,KEY_WALK);
+			pNPC[npcid]->SetState(PLAYER_STATE_ONFOOT);
+			return 1;
+		}
 	}
 	return 0;
 }
-// NPC_RunTo(NPC:npcid,Float:X,Float:Y,Float:Z,is_z_map);
+// NPC_RunTo(NPC:npcid,Float:X,Float:Y,Float:Z,is_z_map,Float:speed);
 static cell AMX_NATIVE_CALL n_NPC_RunTo( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
 		float y = amx_ctof(params[3]);
 		float z = amx_ctof(params[4]);
 		bool z_map = (params[5]==0?false:true);
-		pNPC[npcid]->GoTo(x,y,z,VELOCITY_LEN_RUN,z_map,false);
-		pNPC[npcid]->SetKeys(KEY_UP,0,0);
-		pNPC[npcid]->SetState(NPC_STATE_ONFOOT);
-		return 1;
+		float speed = amx_ctof(params[6]);
+		if(pNPC[npcid]->Move(x,y,z,speed,z_map,false))
+		{
+			pNPC[npcid]->SetKeys(KEY_UP,0,0);
+			pNPC[npcid]->SetState(PLAYER_STATE_ONFOOT);
+			return 1;
+		}
 	}
 	return 0;
 }
-// NPC_SprintTo(NPC:npcid,Float:X,Float:Y,Float:Z,is_z_map);
+// NPC_SprintTo(NPC:npcid,Float:X,Float:Y,Float:Z,is_z_map,Float:speed);
 static cell AMX_NATIVE_CALL n_NPC_SprintTo( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
 		float y = amx_ctof(params[3]);
 		float z = amx_ctof(params[4]);
 		bool z_map = (params[5]==0?false:true);
-		pNPC[npcid]->GoTo(x,y,z,VELOCITY_LEN_SPRINT,z_map,false);
-		pNPC[npcid]->SetKeys(KEY_UP,0,KEY_SPRINT);
-		pNPC[npcid]->SetState(NPC_STATE_ONFOOT);
-		return 1;
+		float speed = amx_ctof(params[6]);
+		if(pNPC[npcid]->Move(x,y,z,speed,z_map,false))
+		{
+			pNPC[npcid]->SetKeys(KEY_UP,0,KEY_SPRINT);
+			pNPC[npcid]->SetState(PLAYER_STATE_ONFOOT);
+			return 1;
+		}
 	}
 	return 0;
 }
 // NPC_LookAt(NPC:npcid,Float:X,Float:Y,Float:Z);
 static cell AMX_NATIVE_CALL n_NPC_LookAt( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		float x,y,z,tx,ty,tz,len;
-		pNPC[npcid]->GetPosition(&x,&y,&z);
-		z += 0.7f;
+		float tx,ty,tz;
+
 		tx = amx_ctof(params[2]);
 		ty = amx_ctof(params[3]);
 		tz = amx_ctof(params[4]);
-		// create vector
-		tx -= x;
-		ty -= y;
-		tz -= z;
-		len = sqrt((tx*tx) + (ty*ty) + (tz*tz));
-		tx /= len;
-		ty /= len;
-		tz /= len;
-		// set data
-		pNPC[npcid]->SetCameraPos(x,y,z);
-		pNPC[npcid]->SetCameraFrontVector(tx,ty,tz);
-		pNPC[npcid]->SetCameraMode(53);
-		int ud,lr,other;
-		pNPC[npcid]->GetKeys(&ud,&lr,&other);
-		pNPC[npcid]->SetKeys(ud,lr,0);
+
+		pNPC[npcid]->Look(tx,ty,tz);
 		return 1;
 	}
 	return 0;
@@ -296,7 +291,7 @@ static cell AMX_NATIVE_CALL n_NPC_LookAt( AMX* amx, cell* params )
 // NPC_AimAt(NPC:npcid,Float:X,Float:Y,Float:Z);
 static cell AMX_NATIVE_CALL n_NPC_AimAt( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float tx,ty,tz;
@@ -305,33 +300,7 @@ static cell AMX_NATIVE_CALL n_NPC_AimAt( AMX* amx, cell* params )
 		ty = amx_ctof(params[3]);
 		tz = amx_ctof(params[4]);
 
-		pNPC[npcid]->SetAimByWeapon(pNPC[npcid]->GetWeapon(),tx,ty,tz);
-
-		int ud,lr,other;
-		pNPC[npcid]->GetKeys(&ud,&lr,&other);
-		pNPC[npcid]->SetKeys(ud,lr,KEY_HANDBRAKE);
-		// camera mode
-		switch(pNPC[npcid]->GetWeapon())
-		{
-		case 0: break;
-		// 2 hands
-		case WEAPON_COLT45:
-		case WEAPON_SAWEDOFF:
-		case WEAPON_UZI:
-		case WEAPON_TEC9:
-			{
-				pNPC[npcid]->SetCameraMode(53);
-				pNPC[npcid]->SetWeaponState(2);
-				break;
-			}
-		// 1 hand
-		default:
-			{
-				pNPC[npcid]->SetCameraMode(7);
-				pNPC[npcid]->SetWeaponState(2);
-				break;
-			}
-		}
+		pNPC[npcid]->Aim(tx,ty,tz);
 		return 1;
 	}
 	return 1;
@@ -339,7 +308,7 @@ static cell AMX_NATIVE_CALL n_NPC_AimAt( AMX* amx, cell* params )
 // NPC_ShootAt(NPC:npcid,Float:X,Float:Y,Float:Z);
 static cell AMX_NATIVE_CALL n_NPC_ShootAt( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float tx,ty,tz;
@@ -348,33 +317,7 @@ static cell AMX_NATIVE_CALL n_NPC_ShootAt( AMX* amx, cell* params )
 		ty = amx_ctof(params[3]);
 		tz = amx_ctof(params[4]);
 
-		pNPC[npcid]->SetAimByWeapon(pNPC[npcid]->GetWeapon(),tx,ty,tz);
-		// keys
-		int ud,lr,other;
-		pNPC[npcid]->GetKeys(&ud,&lr,&other);
-		pNPC[npcid]->SetKeys(ud,lr,KEY_HANDBRAKE + KEY_FIRE);
-		// camera mode
-		switch(pNPC[npcid]->GetWeapon())
-		{
-		case 0: break;
-		// 2 hands
-		case WEAPON_COLT45:
-		case WEAPON_SAWEDOFF:
-		case WEAPON_UZI:
-		case WEAPON_TEC9:
-			{
-				pNPC[npcid]->SetCameraMode(53);
-				pNPC[npcid]->SetWeaponState(WEAPONSTATE_MORE_BULLETS);
-				break;
-			}
-		// 1 hand
-		default:
-			{
-				pNPC[npcid]->SetCameraMode(7);
-				pNPC[npcid]->SetWeaponState(WEAPONSTATE_MORE_BULLETS);
-				break;
-			}
-		}
+		pNPC[npcid]->Fire(tx,ty,tz);
 		return 1;
 	}
 	return 1;
@@ -382,7 +325,7 @@ static cell AMX_NATIVE_CALL n_NPC_ShootAt( AMX* amx, cell* params )
 // SetNPCCameraPos(NPC:npcid,Float:X,Float:Y,Float:Z);
 static cell AMX_NATIVE_CALL n_SetNPCCameraPos( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
@@ -396,7 +339,7 @@ static cell AMX_NATIVE_CALL n_SetNPCCameraPos( AMX* amx, cell* params )
 // GetNPCCameraPos(NPC:npcid,&Float:X,&Float:Y,&Float:Z);
 static cell AMX_NATIVE_CALL n_GetNPCCameraPos( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x,y,z;
@@ -418,7 +361,7 @@ static cell AMX_NATIVE_CALL n_GetNPCCameraPos( AMX* amx, cell* params )
 // SetNPCCameraFrontVector(NPC:npcid,Float:X,Float:Y,Float:Z);
 static cell AMX_NATIVE_CALL n_SetNPCCameraFrontVector( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
@@ -432,7 +375,7 @@ static cell AMX_NATIVE_CALL n_SetNPCCameraFrontVector( AMX* amx, cell* params )
 // GetNPCCameraFrontVector(NPC:npcid,&Float:X,&Float:Y,&Float:Z);
 static cell AMX_NATIVE_CALL n_GetNPCCameraFrontVector( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x,y,z;
@@ -454,10 +397,10 @@ static cell AMX_NATIVE_CALL n_GetNPCCameraFrontVector( AMX* amx, cell* params )
 // SetNPCCameraMode(NPC:npcid,mode);
 static cell AMX_NATIVE_CALL n_SetNPCCameraMode( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetCameraMode((int)params[2]);
+		pNPC[npcid]->SetCameraMode((unsigned char)params[2]);
 		return 1;
 	}
 	return 0;
@@ -465,17 +408,17 @@ static cell AMX_NATIVE_CALL n_SetNPCCameraMode( AMX* amx, cell* params )
 // GetNPCCameraMode(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCCameraMode( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetCameraMode();
+		return (cell)pNPC[npcid]->GetCameraMode();
 	}
 	return 0;
 }
 // SetNPCWeaponState(NPC:npcid,state);
 static cell AMX_NATIVE_CALL n_SetNPCWeaponState( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		pNPC[npcid]->SetWeaponState(((int)params[2] << 6));
@@ -486,7 +429,7 @@ static cell AMX_NATIVE_CALL n_SetNPCWeaponState( AMX* amx, cell* params )
 // GetNPCWeaponState(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCWeaponState( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		return pNPC[npcid]->GetWeaponState() >> 6;
@@ -496,12 +439,12 @@ static cell AMX_NATIVE_CALL n_GetNPCWeaponState( AMX* amx, cell* params )
 // SetNPCKeys(NPC:npcid,updown,leftright,keys);
 static cell AMX_NATIVE_CALL n_SetNPCKeys( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		int ud = (int)params[2];
-		int lr = (int)params[3];
-		int other = (int)params[4];
+		unsigned short ud = (unsigned short)params[2];
+		unsigned short lr = (unsigned short)params[3];
+		unsigned short other = (unsigned short)params[4];
 		pNPC[npcid]->SetKeys(ud,lr,other);
 		return 1;
 	}
@@ -510,10 +453,10 @@ static cell AMX_NATIVE_CALL n_SetNPCKeys( AMX* amx, cell* params )
 // GetNPCKeys(NPC:npcid,&updown,&leftright,&keys);
 static cell AMX_NATIVE_CALL n_GetNPCKeys( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		int ud,lr,other;
+		unsigned short ud,lr,other;
 		pNPC[npcid]->GetKeys(&ud,&lr,&other);
 		cell
 			* p1,
@@ -532,10 +475,10 @@ static cell AMX_NATIVE_CALL n_GetNPCKeys( AMX* amx, cell* params )
 // SetNPCWeapon(NPC:npcid,weaponid);
 static cell AMX_NATIVE_CALL n_SetNPCWeapon( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetWeapon((int)params[2]);
+		pNPC[npcid]->SetWeapon((unsigned char)params[2]);
 		return 1;
 	}
 	return 0;
@@ -543,20 +486,20 @@ static cell AMX_NATIVE_CALL n_SetNPCWeapon( AMX* amx, cell* params )
 // GetNPCWeapon(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCWeapon( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetWeapon();
+		return (cell)pNPC[npcid]->GetWeapon();
 	}
 	return 0;
 }
 // SetNPCWeaponSkillLevel(NPC:npcid,weapontype,level);
 static cell AMX_NATIVE_CALL n_SetNPCWeaponSkillLevel( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetWeaponSkillLevel((int)params[2],(int)params[3]);
+		pNPC[npcid]->SetWeaponSkillLevel((unsigned char)params[2],(unsigned short)params[3]);
 		return 1;
 	}
 	return 0;
@@ -564,22 +507,22 @@ static cell AMX_NATIVE_CALL n_SetNPCWeaponSkillLevel( AMX* amx, cell* params )
 // GetNPCWeaponSkillLevel(NPC:npcid,weapontype);
 static cell AMX_NATIVE_CALL n_GetNPCWeaponSkillLevel( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetWeaponSkillLevel((int)params[2]);
+		return (cell)pNPC[npcid]->GetWeaponSkillLevel((unsigned char)params[2]);
 	}
 	return 0;
 }
 // SetNPCHealth(NPC:npcid,Float:health);
 static cell AMX_NATIVE_CALL n_SetNPCHealth( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float health = amx_ctof(params[2]);
 		pNPC[npcid]->SetHealth(health);
-		if(health <= 0.0) pNPC[npcid]->Kill(npcid,0);
+		if(health <= 0.0) pNPC[npcid]->Kill(INVALID_PLAYER_ID,0);
 		return 1;
 	}
 	return 0;
@@ -587,7 +530,7 @@ static cell AMX_NATIVE_CALL n_SetNPCHealth( AMX* amx, cell* params )
 // Float:GetNPCHealth(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCHealth( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float health = pNPC[npcid]->GetHealth();
@@ -598,7 +541,7 @@ static cell AMX_NATIVE_CALL n_GetNPCHealth( AMX* amx, cell* params )
 // SetNPCArmour(NPC:npcid,Float:armour);
 static cell AMX_NATIVE_CALL n_SetNPCArmour( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float armour = amx_ctof(params[2]);
@@ -610,7 +553,7 @@ static cell AMX_NATIVE_CALL n_SetNPCArmour( AMX* amx, cell* params )
 // Float:GetNPCArmour(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCArmour( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float armour = pNPC[npcid]->GetArmour();
@@ -621,10 +564,10 @@ static cell AMX_NATIVE_CALL n_GetNPCArmour( AMX* amx, cell* params )
 // SetNPCInterior(NPC:npcid,interior);
 static cell AMX_NATIVE_CALL n_SetNPCInterior( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetInterior(params[2]);
+		pNPC[npcid]->SetInterior((unsigned long)params[2]);
 		return 1;
 	}
 	return 0;
@@ -632,20 +575,20 @@ static cell AMX_NATIVE_CALL n_SetNPCInterior( AMX* amx, cell* params )
 // GetNPCInterior(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCInterior( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetInterior();
+		return (cell)pNPC[npcid]->GetInterior();
 	}
 	return 0;
 }
 // SetNPCSpecialAction(NPC:npcid,sactionid);
 static cell AMX_NATIVE_CALL n_SetNPCSpecialAction( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetSpecialAction(params[2]);
+		pNPC[npcid]->SetSpecialAction((unsigned char)params[2]);
 		return 1;
 	}
 	return 0;
@@ -653,20 +596,20 @@ static cell AMX_NATIVE_CALL n_SetNPCSpecialAction( AMX* amx, cell* params )
 // GetNPCSpecialAction(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCSpecialAction( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetSpecialAction();
+		return (cell)pNPC[npcid]->GetSpecialAction();
 	}
 	return 0;
 }
 // SetNPCAnimationIndex(NPC:npcid,animationid);
 static cell AMX_NATIVE_CALL n_SetNPCAnimationIndex( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetAnimationIndex(params[2]);
+		pNPC[npcid]->SetAnimationIndex((unsigned long)params[2]);
 		return 1;
 	}
 	return 0;
@@ -674,20 +617,20 @@ static cell AMX_NATIVE_CALL n_SetNPCAnimationIndex( AMX* amx, cell* params )
 // GetNPCAnimationIndex(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCAnimationIndex( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetAnimationIndex();
+		return (cell)pNPC[npcid]->GetAnimationIndex();
 	}
 	return 0;
 }
 // SetNPCSkin(NPC:npcid,skin);
 static cell AMX_NATIVE_CALL n_SetNPCSkin( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetSkin(params[2]);
+		pNPC[npcid]->SetSkin((unsigned long)params[2]);
 		return 1;
 	}
 	return 0;
@@ -695,17 +638,17 @@ static cell AMX_NATIVE_CALL n_SetNPCSkin( AMX* amx, cell* params )
 // GetNPCSkin(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCSkin( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetSkin();
+		return (cell)pNPC[npcid]->GetSkin();
 	}
 	return 0;
 }
 // SetNPCSurfing(NPC:npcid,Float:X,Float:Y,Float:Z);
 static cell AMX_NATIVE_CALL n_SetNPCSurfing( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
@@ -719,7 +662,7 @@ static cell AMX_NATIVE_CALL n_SetNPCSurfing( AMX* amx, cell* params )
 // GetNPCSurfing(NPC:npcid,&Float:X,&Float:Y,&Float:Z);
 static cell AMX_NATIVE_CALL n_GetNPCSurfing( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x,y,z;
@@ -741,10 +684,10 @@ static cell AMX_NATIVE_CALL n_GetNPCSurfing( AMX* amx, cell* params )
 // SetNPCSurfingVehicle(NPC:npcid,vehicleid);
 static cell AMX_NATIVE_CALL n_SetNPCSurfingVehicle( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetSurfingVehicle(params[2]);
+		pNPC[npcid]->SetSurfingVehicle((unsigned short)params[2]);
 		return 1;
 	}
 	return 0;
@@ -752,17 +695,17 @@ static cell AMX_NATIVE_CALL n_SetNPCSurfingVehicle( AMX* amx, cell* params )
 // GetNPCSurfingVehicle(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCSurfingVehicle( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetSurfingVehicle();
+		return (cell)pNPC[npcid]->GetSurfingVehicle();
 	}
 	return 0;
 }
 // SetNPCImpregnable(NPC:npcid,bool:istate);
 static cell AMX_NATIVE_CALL n_SetNPCImpregnable( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		bool state = (params[2]==0?false:true);
@@ -774,7 +717,7 @@ static cell AMX_NATIVE_CALL n_SetNPCImpregnable( AMX* amx, cell* params )
 // IsNPCImpregnable(NPC:npcid);
 static cell AMX_NATIVE_CALL n_IsNPCImpregnable( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		return pNPC[npcid]->IsImpregnable();
@@ -784,10 +727,10 @@ static cell AMX_NATIVE_CALL n_IsNPCImpregnable( AMX* amx, cell* params )
 // KillNPC(NPC:npcid);
 static cell AMX_NATIVE_CALL n_KillNPC( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->Kill(-1,0);
+		pNPC[npcid]->Kill(INVALID_PLAYER_ID,0);
 		return 1;
 	}
 	return 0;
@@ -795,7 +738,7 @@ static cell AMX_NATIVE_CALL n_KillNPC( AMX* amx, cell* params )
 // SpawnNPC(NPC:npcid);
 static cell AMX_NATIVE_CALL n_SpawnNPC( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		pNPC[npcid]->Spawn();
@@ -806,23 +749,21 @@ static cell AMX_NATIVE_CALL n_SpawnNPC( AMX* amx, cell* params )
 // StopNPC(NPC:npcid);
 static cell AMX_NATIVE_CALL n_StopNPC( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		pNPC[npcid]->Stop();
-		pNPC[npcid]->SetKeys(0,0,0);
 		return 1;
 	}
 	return 0;
 }
-
 // PutNPCInVehicle(NPC:npcid,vehicleid,seat);
 static cell AMX_NATIVE_CALL n_PutNPCInVehicle( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->PutInVehicle((int)params[2],(int)params[3]);
+		pNPC[npcid]->PutInVehicle((unsigned short)params[2],(unsigned char)params[3]);
 		return 1;
 	}
 	return 0;
@@ -830,28 +771,30 @@ static cell AMX_NATIVE_CALL n_PutNPCInVehicle( AMX* amx, cell* params )
 // NPC_DriveTo(NPC:npcid,Float:X,Float:Y,Float:Z,Float:speed,is_z_map);
 static cell AMX_NATIVE_CALL n_NPC_DriveTo( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float x = amx_ctof(params[2]);
 		float y = amx_ctof(params[3]);
 		float z = amx_ctof(params[4]);
-		float speed = amx_ctof(params[5]) / 200.0f;
+		float speed = amx_ctof(params[5]) / 100.f;
 		bool z_map = (params[6]==0?false:true);
-		pNPC[npcid]->GoTo(x,y,z,speed,z_map,true);
-		pNPC[npcid]->SetKeys(KEY_UP,0,0);
-		pNPC[npcid]->SetState(NPC_STATE_DRIVER);
-		return 1;
+		if(pNPC[npcid]->Move(x,y,z,speed,z_map,false))
+		{
+			pNPC[npcid]->SetKeys(KEY_UP,0,0);
+			pNPC[npcid]->SetState(PLAYER_STATE_DRIVER);
+			return 1;
+		}
 	}
 	return 0;
 }
 // SetNPCVehicleSiren(NPC:npcid,state);
 static cell AMX_NATIVE_CALL n_SetNPCVehicleSiren( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetVehicleSiren(params[2]);
+		pNPC[npcid]->SetVehicleSiren((params[2]==0?false:true));
 		return 1;
 	}
 	return 0;
@@ -859,17 +802,17 @@ static cell AMX_NATIVE_CALL n_SetNPCVehicleSiren( AMX* amx, cell* params )
 // GetNPCVehicleSiren(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCVehicleSiren( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetVehicleSiren();
+		return (pNPC[npcid]->GetVehicleSiren()==true?1:0);
 	}
 	return 0;
 }
 // SetNPCVehicleHealth(NPC:npcid,Float:health);
 static cell AMX_NATIVE_CALL n_SetNPCVehicleHealth( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float health = amx_ctof(params[2]);
@@ -881,7 +824,7 @@ static cell AMX_NATIVE_CALL n_SetNPCVehicleHealth( AMX* amx, cell* params )
 // Float:GetNPCVehicleHealth(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCVehicleHealth( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		float health = pNPC[npcid]->GetVehicleHealth();
@@ -892,10 +835,10 @@ static cell AMX_NATIVE_CALL n_GetNPCVehicleHealth( AMX* amx, cell* params )
 // SetNPCVehicleTrailer(NPC:npcid,trailerid);
 static cell AMX_NATIVE_CALL n_SetNPCVehicleTrailer( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetVehicleTrailer(params[2]);
+		pNPC[npcid]->SetVehicleTrailer((unsigned short)params[2]);
 		return 1;
 	}
 	return 0;
@@ -903,20 +846,20 @@ static cell AMX_NATIVE_CALL n_SetNPCVehicleTrailer( AMX* amx, cell* params )
 // GetNPCVehicleTrailer(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCVehicleTrailer( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetVehicleTrailer();
+		return (cell)pNPC[npcid]->GetVehicleTrailer();
 	}
 	return 0;
 }
 // SetNPCPassangerDriveBy(NPC:npcid,weaponid);
 static cell AMX_NATIVE_CALL n_SetNPCPassangerDriveBy( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->SetPassangerDriveBy(params[2]);
+		pNPC[npcid]->SetPassangerDriveBy((params[2]==0?false:true));
 		return 1;
 	}
 	return 0;
@@ -924,76 +867,75 @@ static cell AMX_NATIVE_CALL n_SetNPCPassangerDriveBy( AMX* amx, cell* params )
 // GetNPCPassangerDriveBy(NPC:npcid);
 static cell AMX_NATIVE_CALL n_GetNPCPassangerDriveBy( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		return pNPC[npcid]->GetPassangerDriveBy();
+		return (pNPC[npcid]->GetPassangerDriveBy()==false?0:1);
 	}
 	return 0;
 }
 // SetWeaponDamageForNPC(weaponid,Float:damage);
 static cell AMX_NATIVE_CALL n_SetWeaponDamageForNPC( AMX* amx, cell* params )
 {
-	int weaponid = (int)params[1];
-	WeaponsDamage[weaponid] = amx_ctof(params[2]);
+	unsigned char weaponid = (unsigned char)params[1];
+	SWeaponData* wd = GetWeaponData(weaponid);
+	wd->damage = amx_ctof(params[2]);
 	return 1;	
 }
 // SetWeaponReloadTimeForNPC(weaponid,mstime);
 static cell AMX_NATIVE_CALL n_SetWeaponReloadTimeForNPC( AMX* amx, cell* params )
 {
-	int weaponid = (int)params[1];
-	WeaponsReloadTime[weaponid] = (int)params[2];
+	unsigned char weaponid = (unsigned char)params[1];
+	SWeaponData* wd = GetWeaponData(weaponid);
+	wd->shoot_time = amx_ctof(params[2]);
 	return 1;	
 }
 // StartRecordingPlayback(NPC:npcid,name[]);
 static cell AMX_NATIVE_CALL n_StartRecordingPlayback( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
 		char* temp;
 		amx_StrParam(amx, params[2], temp);
-		return pNPC[npcid]->StartRecordingPlayback(temp);
+		if(pNPC[npcid]->StartRecordingPlayback(temp)) return 1;
 	}
 	return 0;	
 }
 // PauseRecordingPlayback(NPC:npcid);
 static cell AMX_NATIVE_CALL n_PauseRecordingPlayback( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->PauseRecordingPlayback();
-		return 1;
+		if(pNPC[npcid]->PauseRecordingPlayback()) return 1;
 	}
 	return 0;	
 }
 // ContinueRecordingPlayback(NPC:npcid);
 static cell AMX_NATIVE_CALL n_ContinueRecordingPlayback( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->ContinueRecordingPlayback();
-		return 1;
+		if(pNPC[npcid]->ContinueRecordingPlayback()) return 1;
 	}
 	return 0;	
 }
 // StopRecordingPlayback(NPC:npcid);
 static cell AMX_NATIVE_CALL n_StopRecordingPlayback( AMX* amx, cell* params )
 {
-	int npcid = (int)params[1];
+	unsigned short npcid = (unsigned short)params[1];
 	if(pNPC[npcid])
 	{
-		pNPC[npcid]->StopRecordingPlayback(NPC_RECORD_END_REASON_STOP);
-		return 1;
+		if(pNPC[npcid]->StopRecordingPlayback()) return 1;
 	}
 	return 0;	
 }
 // ToogleVisualDeath(tstate);
 static cell AMX_NATIVE_CALL n_ToogleVisualDeath( AMX* amx, cell* params )
 {
-	VisualDeath = (params[1] == 0?0:1);
+	VisualDeath = (params[1] == 0?false:true);
 	return 1;
 }
 // FindLastFreeSlot();
@@ -1280,6 +1222,7 @@ static cell AMX_NATIVE_CALL n_GetNodeLinkNodeId( AMX* amx, cell* params )
 static cell AMX_NATIVE_CALL n_nodes_Init( AMX* amx, cell* params )
 {
 	if(!pNodeManager) pNodeManager = new CNodeManager();
+	nm_count++;
 	return 1;
 }
 // nodes_Exit();
@@ -1287,8 +1230,12 @@ static cell AMX_NATIVE_CALL n_nodes_Exit( AMX* amx, cell* params )
 {
 	if(pNodeManager) 
 	{
-		delete pNodeManager;
-		pNodeManager = NULL;
+		nm_count--;
+		if(!nm_count)
+		{
+			delete pNodeManager;
+			pNodeManager = NULL;
+		}
 	}
 	return 1;
 }
@@ -1299,8 +1246,8 @@ static cell AMX_NATIVE_CALL n_nodes_GetNodePos( AMX* amx, cell* params )
 			* x,
 			* y,
 			* z;
-	int nodetype = (int)params[1];
-	int nodeid = (int)params[2];
+	unsigned char nodetype = (unsigned char)params[1];
+	unsigned long nodeid = (unsigned long)params[2];
 	float pos[3];
 
 	amx_GetAddr(amx, params[3], &x);
@@ -1320,34 +1267,34 @@ static cell AMX_NATIVE_CALL n_nodes_GetNodePos( AMX* amx, cell* params )
 // nodes_GetNodeAreaid(nodetype,nodeid);
 static cell AMX_NATIVE_CALL n_nodes_GetNodeAreaid( AMX* amx, cell* params )
 {
-	int nodetype = (int)params[1];
-	int nodeid = (int)params[2];
+	unsigned char nodetype = (unsigned char)params[1];
+	unsigned long nodeid = (unsigned long)params[2];
 
 	return pNodeManager->GetNodeAreaid(nodetype,nodeid);
 }
 // nodes_GetNodeNodeid(nodetype,nodeid);
 static cell AMX_NATIVE_CALL n_nodes_GetNodeNodeid( AMX* amx, cell* params )
 {
-	int nodetype = (int)params[1];
-	int nodeid = (int)params[2];
+	unsigned char nodetype = (unsigned char)params[1];
+	unsigned long nodeid = (unsigned long)params[2];
 
 	return pNodeManager->GetNodeNodeid(nodetype,nodeid);
 }
 // nodes_GetNodeLink(nodetype,nodeid,linkid);
 static cell AMX_NATIVE_CALL n_nodes_GetNodeLink( AMX* amx, cell* params )
 {
-	int nodetype = (int)params[1];
-	int nodeid = (int)params[2];
-	int linkid = (int)params[3];
+	unsigned char nodetype = (unsigned char)params[1];
+	unsigned long nodeid = (unsigned long)params[2];
+	unsigned char linkid = (unsigned char)params[3];
 
 	return pNodeManager->GetNodeLink(nodetype,nodeid,linkid);
 }
 // Float:nodes_GetNodeLinkDist(nodetype,nodeid,linkid);
 static cell AMX_NATIVE_CALL n_nodes_GetNodeLinkDist( AMX* amx, cell* params )
 {
-	int nodetype = (int)params[1];
-	int nodeid = (int)params[2];
-	int linkid = (int)params[3];
+	unsigned char nodetype = (unsigned char)params[1];
+	unsigned long nodeid = (unsigned long)params[2];
+	unsigned char linkid = (unsigned char)params[3];
 
 	float result = pNodeManager->GetNodeLinkDist(nodetype,nodeid,linkid);
 
@@ -1356,22 +1303,22 @@ static cell AMX_NATIVE_CALL n_nodes_GetNodeLinkDist( AMX* amx, cell* params )
 // nodes_GetNodeLinkCount(nodetype,nodeid);
 static cell AMX_NATIVE_CALL n_nodes_GetNodeLinkCount( AMX* amx, cell* params )
 {
-	int nodetype = (int)params[1];
-	int nodeid = (int)params[2];
+	unsigned char nodetype = (unsigned char)params[1];
+	unsigned long nodeid = (unsigned long)params[2];
 
 	return pNodeManager->GetNodeLinkCount(nodetype,nodeid);
 }
 // nodes_GetNodeCount(nodetype);
 static cell AMX_NATIVE_CALL n_nodes_GetNodeCount( AMX* amx, cell* params )
 {
-	int nodetype = (int)params[1];
+	unsigned char nodetype = (unsigned char)params[1];
 
 	return pNodeManager->GetNodeCount(nodetype);
 }
 // nodes_GetNodeid(nodetype,Float:x,Float:y,Float:z);
 static cell AMX_NATIVE_CALL n_nodes_GetNodeid( AMX* amx, cell* params )
 {
-	int nodetype = (int)params[1];
+	unsigned char nodetype = (unsigned char)params[1];
 	float x = amx_ctof(params[2]);
 	float y = amx_ctof(params[3]);
 	float z = amx_ctof(params[4]);
@@ -1430,9 +1377,9 @@ static cell AMX_NATIVE_CALL n_dijkstra_CalcPathByNodes( AMX* amx, cell* params )
 	unsigned char areas[64];
 
 	amx_GetAddr(amx,params[1],&r_areas);
-	int nodetype = (int)params[2];
-	int startnodeid = (int)params[3];
-	int endnodeid = (int)params[4];
+	unsigned char nodetype = (unsigned char)params[2];
+	unsigned long startnodeid = (unsigned long)params[3];
+	unsigned long endnodeid = (unsigned long)params[4];
 
 	for(unsigned char i = 0;i < 64;i++) areas[i] = (unsigned char)r_areas[i];
 
@@ -1443,7 +1390,7 @@ static cell AMX_NATIVE_CALL n_path_Destroy( AMX* amx, cell* params )
 {
 	unsigned short pathid = (unsigned short)params[1];
 	
-	if((int)pNodePaths[pathid] > 1)
+	if(pNodePaths[pathid])
 	{
 		delete pNodePaths[pathid];
 		pNodePaths[pathid] = NULL;
@@ -1457,7 +1404,7 @@ static cell AMX_NATIVE_CALL n_path_GetPathNodeid( AMX* amx, cell* params )
 	unsigned short pathid = (unsigned short)params[1];
 	unsigned long pointid = (unsigned long)params[2];
 	
-	if((int)pNodePaths[pathid] > 1)
+	if(pNodePaths[pathid])
 	{
 		return pNodePaths[pathid]->GetPathNodeid(pointid);
 	}
@@ -1468,7 +1415,7 @@ static cell AMX_NATIVE_CALL n_path_GetPathLen( AMX* amx, cell* params )
 {
 	unsigned short pathid = (unsigned short)params[1];
 	
-	if((int)pNodePaths[pathid] > 1)
+	if(pNodePaths[pathid])
 	{
 		return pNodePaths[pathid]->GetPathLen();
 	}
@@ -1479,7 +1426,7 @@ static cell AMX_NATIVE_CALL n_path_GetPathDist( AMX* amx, cell* params )
 {
 	unsigned short pathid = (unsigned short)params[1];
 	
-	if((int)pNodePaths[pathid] > 1)
+	if(pNodePaths[pathid])
 	{
 		float result = pNodePaths[pathid]->GetPathDist();
 		return amx_ftoc(result);
@@ -1495,7 +1442,7 @@ static cell AMX_NATIVE_CALL n_zmap_Init( AMX* amx, cell* params )
 	mode = (int)params[2];
 
 	if(!pZMap) pZMap = new CZMap(temp,mode);
-
+	zm_count++;
 	return 1;
 }
 // zmap_Exit();
@@ -1503,8 +1450,12 @@ static cell AMX_NATIVE_CALL n_zmap_Exit( AMX* amx, cell* params )
 {
 	if(pZMap)
 	{
-		delete pZMap;
-		pZMap = NULL;
+		zm_count--;
+		if(!zm_count)
+		{
+			delete pZMap;
+			pZMap = NULL;
+		}
 	}
 
 	return 1;

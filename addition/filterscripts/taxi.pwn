@@ -108,6 +108,12 @@ public OnPlayerDisconnect(playerid, reason)
     
 }
 
+public OnPlayerUpdate(playerid)
+{
+    controller_OnPlayerUpdate(playerid);
+	return 1;
+}
+
 public OnNPCGetDamage(npcid,playerid,Float:health_loss)
 {
 	return 1;

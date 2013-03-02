@@ -14,6 +14,7 @@ class FakeClass {};
 	typedef void (FakeClass::* f_ClientDisconnect)(int,int);
 	typedef void (FakeClass::* f_SpawnForWorld)();
 	typedef void (FakeClass::* f_DeathForWorld)(int,int);
+	typedef void (FakeClass::* f_PlayerStreamOut)(int);
 	typedef unsigned short (FakeClass::* f_GetConfigVar)(char*);
 
 	typedef void (* f_TeleportFunction)(int,float,float,float);
@@ -22,6 +23,7 @@ class FakeClass {};
 	typedef void (* f_ClientDisconnect)(FakeClass*,int,int);
 	typedef void (* f_SpawnForWorld)(FakeClass*);
 	typedef void (* f_DeathForWorld)(FakeClass*,int,int);
+	typedef void (* f_PlayerStreamOut)(FakeClass*,int);
 	typedef unsigned short (* f_GetConfigVar)(FakeClass*,char*);
 #endif
 
@@ -34,6 +36,7 @@ f_ClientConnect		pClientConnect;
 f_ClientDisconnect	pClientDisconnect;
 f_SpawnForWorld		pClientSpawn;
 f_DeathForWorld		pClientDeath;
+f_PlayerStreamOut	pPlayerStreamOut;
 f_GetConfigVar		pGetConfigVar;
 
 // funcs
@@ -52,17 +55,14 @@ CHooks::CHooks(unsigned long s_version)
 	POINTER_TO_MEMBER(pClientSpawn,(void *)(SPAWN_FOR_WORLD),f_SpawnForWorld);
 	// death
 	POINTER_TO_MEMBER(pClientDeath,(void *)(KILL_FOR_WORLD),f_DeathForWorld);
+	// stream
+	POINTER_TO_MEMBER(pPlayerStreamOut,(void *)(STREAM_OUT),f_PlayerStreamOut);
 	// config var
 	POINTER_TO_MEMBER(pGetConfigVar,(void *)(GET_CONFIG_VAR),f_GetConfigVar);
 	// set hook
 	Unlock((void*)(ADDR_THREAD_START),(ADDR_THREAD_END - ADDR_THREAD_START));
 	CallHook(ADDR_THREAD_START,(unsigned long)SAMP_ThreadComplete);
 	for(unsigned int i = ADDR_THREAD_START + 5;i < ADDR_THREAD_END;i++) *(unsigned char*)(i) = 0x90;
-}
-
-CHooks::~CHooks()
-{
-
 }
 
 void CHooks::ClientConnect(void* players,int id,char* name)
@@ -83,6 +83,11 @@ void CHooks::ClientSpawn(void* player)
 void CHooks::ClientDeath(void* player,int reason,int killerid)
 {
 	CALL_ARGS(player,pClientDeath,reason _ killerid);
+}
+
+void CHooks::PlayerStreamOut(void* player,int forplayerid)
+{
+	CALL_ARGS(player,pPlayerStreamOut,forplayerid);
 }
 
 unsigned short CHooks::GetMaxPlayers()
