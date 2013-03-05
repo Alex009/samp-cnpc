@@ -471,9 +471,9 @@ stock controller_MoveToByExistPath(npcid,move_type)
 	paths_GetPathPointPos(npcid,npc_step[npcid],tmp[3],tmp[4],tmp[5]);
 	switch(npc_boost{npcid})
 	{
-		case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-		case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-		case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
+		case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+		case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+		case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
 	}
 	// указываем следующий шаг
 	npc_step[npcid]++;
@@ -510,9 +510,9 @@ stock controller_MoveToByCoords(npcid,move_type)
 	// начинаем движение
 	switch(npc_boost{npcid})
 	{
-		case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[0],tmp[1],tmp[2] + 0.5,MOVING_BY_ZMAP);
-		case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[0],tmp[1],tmp[2] + 0.5,MOVING_BY_ZMAP);
-		case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[0],tmp[1],tmp[2] + 0.5,MOVING_BY_ZMAP);
+		case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[0],tmp[1],tmp[2],MOVING_BY_ZMAP);
+		case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[0],tmp[1],tmp[2],MOVING_BY_ZMAP);
+		case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[0],tmp[1],tmp[2],MOVING_BY_ZMAP);
 	}
 	// указываем следующий шаг
 	npc_step[npcid]++;
@@ -583,9 +583,9 @@ stock controller_FollowPlayerByNodes(npcid,playerid,move_type)
 		nodes_GetNodePos(PED_NODES,clid,tmp[3],tmp[4],tmp[5]);
 		switch(move_type)
 		{
-			case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-			case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-			case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
+			case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+			case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+			case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
 		}
 		npc_target_node[npcid] = clid;
 	}
@@ -681,9 +681,9 @@ controller_OnCompCalcPathForNPC(npcid)
 			paths_GetPathPointPos(npcid,npc_step[npcid],tmp[3],tmp[4],tmp[5]);
 			switch(npc_boost{npcid})
 			{
-				case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-				case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-				case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
+				case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+				case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+				case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
 			}
 			// указываем следующий шаг
 			npc_step[npcid]++;
@@ -764,9 +764,9 @@ controller_OnNPCMovingComplete(npcid)
 				// начинаем движение
 				switch(npc_boost{npcid})
 				{
-					case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[0],tmp[1],tmp[2] + 0.5,MOVING_BY_ZMAP);
-					case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[0],tmp[1],tmp[2] + 0.5,MOVING_BY_ZMAP);
-					case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[0],tmp[1],tmp[2] + 0.5,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[0],tmp[1],tmp[2] + 1.0,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[0],tmp[1],tmp[2] + 1.0,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[0],tmp[1],tmp[2] + 1.0,MOVING_BY_ZMAP);
 				}
 				// указываем следующий шаг
 				npc_step[npcid]++;
@@ -789,9 +789,9 @@ controller_OnNPCMovingComplete(npcid)
 				// начинаем движение
 				switch(npc_boost{npcid})
 				{
-					case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[0],tmp[1],tmp[2] + 0.5,MOVING_BY_ZMAP);
-					case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[0],tmp[1],tmp[2] + 0.5,MOVING_BY_ZMAP);
-					case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[0],tmp[1],tmp[2] + 0.5,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[0],tmp[1],tmp[2],MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[0],tmp[1],tmp[2],MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[0],tmp[1],tmp[2],MOVING_BY_ZMAP);
 				}
 				// указываем следующий шаг
 				npc_step[npcid]++;
@@ -833,9 +833,9 @@ controller_OnNPCMovingComplete(npcid)
 				nodes_GetNodePos(PED_NODES,clid,tmp[3],tmp[4],tmp[5]);
 				switch(npc_boost{npcid})
 				{
-					case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-					case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-					case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_WALK: NPC_WalkTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_RUN: NPC_RunTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_SPRINT: NPC_SprintTo(npcid,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
 				}
 				
 				npc_target_node[npcid] = clid;
@@ -914,9 +914,9 @@ controller_OnPlayerUpdate(playerid)
 				nodes_GetNodePos(PED_NODES,clid,tmp[3],tmp[4],tmp[5]);
 				switch(npc_boost{i})
 				{
-					case NPC_MOVE_PED_WALK: NPC_WalkTo(i,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-					case NPC_MOVE_PED_RUN: NPC_RunTo(i,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
-					case NPC_MOVE_PED_SPRINT: NPC_SprintTo(i,tmp[3],tmp[4],tmp[5] + 0.5,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_WALK: NPC_WalkTo(i,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_RUN: NPC_RunTo(i,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
+					case NPC_MOVE_PED_SPRINT: NPC_SprintTo(i,tmp[3],tmp[4],tmp[5] + 1.0,MOVING_BY_ZMAP);
 				}
 				npc_target_node[i] = clid;
 			}

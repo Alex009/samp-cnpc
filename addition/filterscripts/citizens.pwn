@@ -27,7 +27,7 @@
 #define	NODE_TYPE_PED		0
 #define	NODE_TYPE_VEHICLE	1
 
-#define Z_CORRECTION        0.7
+#define Z_CORRECTION        1.0
 #define VEHICLES_SPEED      30.0
 
 // --------------------------------------------------

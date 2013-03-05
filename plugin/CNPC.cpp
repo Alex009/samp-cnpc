@@ -240,7 +240,7 @@ void CNPC::Fire(float x,float y,float z)
 	unsigned short ud,lr,other;
 	float mx,my,mz;
 	float cpx,cpy,cpz;
-	float tx,ty,tz;
+	float tx,ty;//,tz;
 	float vx,vy,vz;
 	float len;
 	unsigned char weaponid;
@@ -274,12 +274,8 @@ void CNPC::Fire(float x,float y,float z)
 			// save
 			cpx = tx;
 			cpy = ty;
-			// calc side a
-			tx = mx+cpx - x;
-			ty = my+cpy - y;
-			tz = mz - z;
 			// calc z fix
-			cpz = wd->cam_pos_fix[3] * sqrt(tx*tx + ty*ty + tz*tz);
+			cpz = wd->cam_pos_fix[3] * (mz - z) + 1.0f;
 			// calc cam pos
 			cpx += mx;
 			cpy += my;
@@ -294,7 +290,7 @@ void CNPC::Fire(float x,float y,float z)
 			vy /= len;
 			vz /= len;
 			// fix gta aim
-			rotate_vector(vx,vy,vz,wd->vector_angles[0],wd->vector_angles[1]);
+			rotate_vector(vx,vy,vz,-wd->vector_angles[0],-wd->vector_angles[1]);
 			// apply data
 			SetCameraPos(cpx,cpy,cpz);
 			SetCameraFrontVector(vx,vy,vz);

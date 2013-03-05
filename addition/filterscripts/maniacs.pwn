@@ -90,7 +90,7 @@ public OnFilterScriptInit()
 		maniac_lastnodeid[i] = maniac_nodeid[i];
 		maniac_nodeid[i] = nodes_GetNodeLink(PED_NODES,maniac_lastnodeid[i],random(nodes_GetNodeLinkCount(PED_NODES,maniac_lastnodeid[i])));
 		nodes_GetNodePos(PED_NODES,maniac_nodeid[i],ftmp[0],ftmp[1],ftmp[2]);
-		NPC_WalkTo(maniac[i],ftmp[0],ftmp[1],ftmp[2] + 0.5,0);
+		NPC_WalkTo(maniac[i],ftmp[0],ftmp[1],ftmp[2] + 1.0,0);
 		// устанавливаем данные
 		maniac_target[i] = INVALID_PLAYER_ID;
 	}
@@ -117,13 +117,20 @@ public OnNPCSpawn(npcid)
 		GetNPCPos(npcid,ftmp[0],ftmp[1],ftmp[2]);
     	maniac_nodeid[i] = nodes_GetNodeid(PED_NODES,ftmp[0],ftmp[1],ftmp[2]);
     	nodes_GetNodePos(PED_NODES,maniac_nodeid[i],ftmp[0],ftmp[1],ftmp[2]);
-		NPC_WalkTo(npcid,ftmp[0],ftmp[1],ftmp[2] + 0.5,0);
+		NPC_WalkTo(npcid,ftmp[0],ftmp[1],ftmp[2] + 1.0,0);
 	}
 }
 
 public OnNPCDeath(npcid,killerid,reason)
 {
-	SetTimerEx("RespawnNPC",1000,0,"d",npcid);
+    for(new i = 0;i < MAX_MANIACS;i++)
+	{
+		if(npcid == maniac[i])
+		{
+			SetTimerEx("RespawnNPC",1000,0,"d",npcid);
+			break;
+		}
+	}
 }
 
 public OnNPCMovingComplete(npcid)
@@ -142,7 +149,7 @@ public OnNPCMovingComplete(npcid)
 		else maniac_nodeid[i] = nodes_GetNodeLink(PED_NODES,maniac_lastnodeid[i],random(nodes_GetNodeLinkCount(PED_NODES,maniac_lastnodeid[i])));
 	    
 		nodes_GetNodePos(PED_NODES,maniac_nodeid[i],ftmp[0],ftmp[1],ftmp[2]);
-		NPC_WalkTo(maniac[i],ftmp[0],ftmp[1],ftmp[2] + 0.5,0);
+		NPC_WalkTo(maniac[i],ftmp[0],ftmp[1],ftmp[2] + 1.0,0);
 		// пусть что либо скажет
 		SetPlayerChatBubble(maniac[i],maniac_talk[random(sizeof(maniac_talk))],0xFF0000FF,50.0,10000);
 	    return;
@@ -182,7 +189,7 @@ public ManiacsCheck()
 			{
 			    // двигаемся дальше
 				nodes_GetNodePos(PED_NODES,maniac_nodeid[i],ftmp[0],ftmp[1],ftmp[2]);
-				NPC_WalkTo(maniac[i],ftmp[0],ftmp[1],ftmp[2] + 0.5,0);
+				NPC_WalkTo(maniac[i],ftmp[0],ftmp[1],ftmp[2] + 1.0,0);
 				// пусть что либо скажет
 				SetPlayerChatBubble(maniac[i],maniac_lost[random(sizeof(maniac_lost))],0xFF0000FF,50.0,10000);
 				// снимаем данные

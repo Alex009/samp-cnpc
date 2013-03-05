@@ -48,32 +48,38 @@ void CNPCDamage::ProcessRangeWeaponDamage(double update_time)
 			{
 				if(!pPlayersData[id]->isfire) continue;
 
-				float mx,my,mz,dist;
+				float mx,my,mz,vx,vy,vz,dist;
 				signed char part = -1;
 				pNPC->GetPosition(&mx,&my,&mz);
+				pNPC->GetVelocity(&vx,&vy,&vz);
+
+				// moving fix
+				mx += vx;
+				my += vy;
+				mz += vz;
 
 				if((part == -1) && GetDistanceFromRayToPoint(pPlayersData[id]->cam_pos[0],pPlayersData[id]->cam_pos[1],pPlayersData[id]->cam_pos[2],
 					pPlayersData[id]->vec_ed[0],pPlayersData[id]->vec_ed[1],pPlayersData[id]->vec_ed[2],
-					mx,my,mz - 0.4f,
+					mx,my,mz - 0.5f,
 					&dist))
 				{
-					if(dist < 0.6f) part = BODYPART_FOOT;
+					if(dist < 0.4f) part = BODYPART_FOOT;
 				}
 				if((part == -1) && GetDistanceFromRayToPoint(pPlayersData[id]->cam_pos[0],pPlayersData[id]->cam_pos[1],pPlayersData[id]->cam_pos[2],
 					pPlayersData[id]->vec_ed[0],pPlayersData[id]->vec_ed[1],pPlayersData[id]->vec_ed[2],
-					mx,my,mz + 0.4f,
+					mx,my,mz + 0.25f,
 					&dist))
 				{
 					if(dist < 0.35f) part = BODYPART_TORSO;
 				}
 				if((part == -1) && GetDistanceFromRayToPoint(pPlayersData[id]->cam_pos[0],pPlayersData[id]->cam_pos[1],pPlayersData[id]->cam_pos[2],
 					pPlayersData[id]->vec_ed[0],pPlayersData[id]->vec_ed[1],pPlayersData[id]->vec_ed[2],
-					mx,my,mz + 0.7f,
+					mx,my,mz + 0.75f,
 					&dist))
 				{
 					if(dist < 0.15f) part = BODYPART_HEAD;
 				}
-
+				
 				if(part != -1)
 				{
 					unsigned char weapon =  pPlayersData[id]->weaponid;

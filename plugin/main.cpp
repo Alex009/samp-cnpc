@@ -3,7 +3,7 @@
  *	License read in license.txt
  */
 
-#define DEMO_MODE
+//#define DEMO_MODE
 
 // SDK
 #include "SDK/amx/amx.h"
