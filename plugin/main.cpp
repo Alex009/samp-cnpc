@@ -3,8 +3,6 @@
  *	License read in license.txt
  */
 
-//#define DEMO_MODE
-
 // SDK
 #include "SDK/amx/amx.h"
 #include "SDK/plugincommon.h"
@@ -21,10 +19,9 @@
 #include "hooks.h"
 #include "natives.h"
 #include "defines.h"
-
-#ifdef DEMO_MODE
-	#include "demo_mode.h"
-#endif
+#include "utils/md5.h"
+#include <string.h>
+#include "demo_mode.h"
 
 CNPC*			pNPC[MAX_NPCS];
 CNode*			pNodes[MAX_NODES];
@@ -51,6 +48,10 @@ PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
 
 PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData ) 
 {
+	unsigned char output[16];
+	char str[33];
+	memset(str,0,33);
+
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
 	logprintf = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
 	AmxCallPublicFilterScript = (AmxCallPublicFilterScript_t)ppData[PLUGIN_DATA_CALLPUBLIC_FS];
@@ -63,6 +64,22 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData )
 	
 	// plugin load
 	logprintf("================");
+	logprintf("Controllable NPC v " PLUGIN_VERSION);
+	logprintf("by 009");
+	logprintf("for SA-MP " SAMP_VERSION " server");
+	// check samp server version
+	if(Curl_md5file((unsigned char*)output,SAMP_SERVER_FILE))
+	{
+		for(int i = 0;i < 16;i++) sprintf(str,"%s%X",str,output[i]);
+		if(strcmp(str,SAMP_SERVER_MD5))
+		{
+			logprintf("md5 hash of your server is invalid, please check your " SAMP_SERVER_FILE);
+			logprintf("md5 should be %s, your server is %s ",SAMP_SERVER_MD5,str);
+			logprintf("================");
+			return false;
+		}
+	}
+	else logprintf("can't check md5 hash (maybe you have incorrect SA-MP server vesion), check your " SAMP_SERVER_FILE);
 	// null data
 	for(unsigned short i = 0;i < MAX_NPCS;i++) pNPC[i] = NULL;
 	for(unsigned short i = 0;i < MAX_NODES;i++) pNodes[i] = NULL;
@@ -76,15 +93,15 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData )
 	// max players
 	MaxPlayers = pHooks->GetMaxPlayers();
 	// data
-	logprintf("Controllable NPC v " PLUGIN_VERSION);
-	logprintf("by 009");
-	logprintf("for SA-MP " SAMP_VERSION " server");
 	logprintf("max players detected: %d",MaxPlayers);
 	// demo mode
 #ifdef DEMO_MODE
-	InitDemoMode();
-	logprintf("It's demo version, please buy full version");
+	logprintf("It's demo version (max players 1), please buy full version");
 	logprintf("Information: http://alekseymikhailov.blogspot.com/");
+	logprintf("Contact:");
+	logprintf("\tSkype: Aleksey.Mikhailov.ru");
+	logprintf("\tICQ: 5306763");
+	logprintf("\tE-mail: Aleksey.Mikhailov.ru@gmail.com");
 #endif
 	// complete
 	logprintf("================");

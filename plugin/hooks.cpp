@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "hooks.h"
 #include "SAMP/address.h"
+#include "demo_mode.h"
 
 class FakeClass {};
 
@@ -63,6 +64,11 @@ CHooks::CHooks(unsigned long s_version)
 	Unlock((void*)(ADDR_THREAD_START),(ADDR_THREAD_END - ADDR_THREAD_START));
 	CallHook(ADDR_THREAD_START,(unsigned long)SAMP_ThreadComplete);
 	for(unsigned int i = ADDR_THREAD_START + 5;i < ADDR_THREAD_END;i++) *(unsigned char*)(i) = 0x90;
+	// set demo mode hooks
+#ifdef DEMO_MODE
+	InitDemoMode();
+#endif
+
 }
 
 void CHooks::ClientConnect(void* players,int id,char* name)

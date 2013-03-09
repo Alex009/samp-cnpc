@@ -4,6 +4,7 @@
  */
 
 #include "os.h"
+#include <stdio.h>
 
 bool Unlock(void *address, int len);
 

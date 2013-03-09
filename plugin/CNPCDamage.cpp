@@ -9,6 +9,7 @@
 #include "utils/utils.h"
 #include "defines.h"
 #include "SWeaponData.h"
+#include "os.h"
 #include <stdlib.h>
 #include <math.h>
 
@@ -167,6 +168,8 @@ void CNPCDamage::UpdatePlayersData(CPlayers* _pPlayers,double update_time)
 					// set len of vector = 1.0
 					float len = sqrt(pPlayersData[id]->vec_ed[0]*pPlayersData[id]->vec_ed[0] + pPlayersData[id]->vec_ed[1]*pPlayersData[id]->vec_ed[1] + pPlayersData[id]->vec_ed[2]*pPlayersData[id]->vec_ed[2]);
 					for(int i = 0;i < 3;i++) pPlayersData[id]->vec_ed[i] /= len;
+					// micro sleep
+					SLEEP(1);
 					break;
 				}
 			}

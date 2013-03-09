@@ -101,6 +101,7 @@
     <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCDamage.cpp" />
     <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCMoving.cpp" />
     <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCPlayback.cpp" />
+    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\utils\md5.cpp" />
     <ClCompile Include="demo_mode.cpp" />
     <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\SWeaponData.cpp" />
     <ClCompile Include="CNodePath.cpp" />
@@ -128,6 +129,7 @@
     <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCPlayback.h" />
     <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\demo_mode.h" />
     <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\SWeaponData.h" />
+    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\utils\md5.h" />
     <ClInclude Include="CNodePath.h" />
     <ClInclude Include="path_calc.h" />
     <ClInclude Include="utils\time.h" />

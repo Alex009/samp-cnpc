@@ -3,4 +3,6 @@
  *	License read in license.txt
  */
 
+#define DEMO_MODE
+
 void InitDemoMode();
