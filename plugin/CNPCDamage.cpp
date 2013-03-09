@@ -175,7 +175,11 @@ void CNPCDamage::UpdatePlayersData(CPlayers* _pPlayers,double update_time)
 		else
 		{
 			// player not exist
-			if(pPlayersData[id]) delete pPlayersData[id];
+			if(pPlayersData[id]) 
+			{
+				delete pPlayersData[id];
+				pPlayersData[id] = NULL;
+			}
 		}
 	}
 }

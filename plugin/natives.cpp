@@ -969,7 +969,7 @@ static cell AMX_NATIVE_CALL n_CloseNode( AMX* amx, cell* params )
 	if(pNodes[nodeid])
 	{
 		delete pNodes[nodeid];
-		pNodes[nodeid] = 0;
+		pNodes[nodeid] = NULL;
 		return 1;
 	}
 	return 0;

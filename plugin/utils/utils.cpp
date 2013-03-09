@@ -248,6 +248,11 @@ void vect_prod(float x1,float y1,float z1,float x2,float y2,float z2,float* x3,f
 	*z3 = x1*y2 - x2*y1;
 }
 
+float vector_len(float x,float y,float z)
+{
+	return sqrt(x*x + y*y + z*z);
+}
+
 bool GetDistanceFromRayToPoint(float rsx,float rsy,float rsz,float rvx,float rvy,float rvz,float px,float py,float pz,float* result)
 {
 	float wx,wy,wz;
@@ -267,4 +272,9 @@ bool GetDistanceFromRayToPoint(float rsx,float rsy,float rsz,float rvx,float rvy
 		*result = sqrt(rx*rx + ry*ry + rz*rz);
 		return true;
 	}
+}
+
+float AngleBetweenVectors(float x1,float y1,float z1,float x2,float y2,float z2)
+{
+	return acos(scal_prod(x1,y1,z1,x2,y2,z2)/(vector_len(x1,y1,z1)*(vector_len(x2,y2,z2))));
 }

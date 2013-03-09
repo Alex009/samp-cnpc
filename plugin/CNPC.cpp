@@ -106,138 +106,6 @@ bool CNPC::Move(float x,float y,float z,float velocity,bool zmap,bool allaxisrot
 
 void CNPC::Look(float x,float y,float z)
 {
-	unsigned short ud,lr,other;
-	float mx,my,mz;
-	float cpx,cpy,cpz;
-	float tx,ty,tz;
-	float vx,vy,vz;
-	float len;
-	unsigned char weaponid;
-	// get my data
-	GetKeys(&ud,&lr,&other);
-	GetPosition(&mx,&my,&mz);
-	// get weapon data
-	weaponid = GetWeapon();
-	SWeaponData* wd = GetWeaponData(weaponid);
-	// find vector mypos - target
-	vx = x - mx;
-	vy = y - my;
-	vz = z - mz;
-	// find z rotate
-	float a = (atan2f(vy,vx) * (180.0f / (float)M_PI)) + 270.0f;
-	if(a > 360.0f) a -= 360.0f;
-	// apply rotate
-	SetAngle(a);
-	// calc x,y fix
-	cpx = wd->cam_pos_fix[0];
-	cpy = wd->cam_pos_fix[1];
-	// fix
-	a *= ((float)M_PI / 180.0f);
-	tx = cpx*cosf(a) - cpy*sinf(a);
-	ty = cpx*sinf(a) + cpy*cosf(a);
-	// save
-	cpx = tx;
-	cpy = ty;
-	// calc side a
-	tx = mx+cpx - x;
-	ty = my+cpy - y;
-	tz = mz - z;
-	// calc z fix
-	cpz = wd->cam_pos_fix[3] * sqrt(tx*tx + ty*ty + tz*tz);
-	// calc cam pos
-	cpx += mx;
-	cpy += my;
-	cpz += mz;
-	// recalc aim vector
-	vx = x - cpx;
-	vy = y - cpy;
-	vz = z - cpz;
-	// set len = 1
-	len = sqrt(vx*vx + vy*vy + vz*vz);
-	vx /= len;
-	vy /= len;
-	vz /= len;
-	// fix gta aim
-	rotate_vector(vx,vy,vz,wd->vector_angles[0],wd->vector_angles[1]);
-	// apply data
-	SetCameraPos(cpx,cpy,cpz);
-	SetCameraFrontVector(vx,vy,vz);
-}
-
-void CNPC::Aim(float x,float y,float z)
-{
-	unsigned short ud,lr,other;
-	float mx,my,mz;
-	float cpx,cpy,cpz;
-	float tx,ty,tz;
-	float vx,vy,vz;
-	float len;
-	unsigned char weaponid;
-	// get my data
-	GetKeys(&ud,&lr,&other);
-	GetPosition(&mx,&my,&mz);
-	// get weapon data
-	weaponid = GetWeapon();
-	SWeaponData* wd = GetWeaponData(weaponid);
-	// select way
-	switch(wd->type)
-	{
-	case WEAPON_TYPE_SHOOT:
-		{
-			// find vector mypos - target
-			vx = x - mx;
-			vy = y - my;
-			vz = z - mz;
-			// find z rotate
-			float a = (atan2f(vy,vx) * (180.0f / (float)M_PI)) + 270.0f;
-			if(a > 360.0f) a -= 360.0f;
-			// apply rotate
-			SetAngle(a);
-			// calc x,y fix
-			cpx = wd->cam_pos_fix[0];
-			cpy = wd->cam_pos_fix[1];
-			// fix
-			a *= ((float)M_PI / 180.0f);
-			tx = cpx*cosf(a) - cpy*sinf(a);
-			ty = cpx*sinf(a) + cpy*cosf(a);
-			// save
-			cpx = tx;
-			cpy = ty;
-			// calc side a
-			tx = mx+cpx - x;
-			ty = my+cpy - y;
-			tz = mz - z;
-			// calc z fix
-			cpz = wd->cam_pos_fix[3] * sqrt(tx*tx + ty*ty + tz*tz);
-			// calc cam pos
-			cpx += mx;
-			cpy += my;
-			cpz += mz;
-			// recalc aim vector
-			vx = x - cpx;
-			vy = y - cpy;
-			vz = z - cpz;
-			// set len = 1
-			len = sqrt(vx*vx + vy*vy + vz*vz);
-			vx /= len;
-			vy /= len;
-			vz /= len;
-			// fix gta aim
-			rotate_vector(vx,vy,vz,wd->vector_angles[0],wd->vector_angles[1]);
-			// apply data
-			SetCameraPos(cpx,cpy,cpz);
-			SetCameraFrontVector(vx,vy,vz);
-			SetKeys(ud,lr,KEY_HANDBRAKE);
-			SetCameraMode(7);
-			SetWeaponState(WEAPONSTATE_MORE_BULLETS);
-			break;
-		}
-	}
-}
-
-void CNPC::Fire(float x,float y,float z)
-{
-	unsigned short ud,lr,other;
 	float mx,my,mz;
 	float cpx,cpy,cpz;
 	float tx,ty;//,tz;
@@ -245,7 +113,6 @@ void CNPC::Fire(float x,float y,float z)
 	float len;
 	unsigned char weaponid;
 	// get my data
-	GetKeys(&ud,&lr,&other);
 	GetPosition(&mx,&my,&mz);
 	// get weapon data
 	weaponid = GetWeapon();
@@ -276,6 +143,9 @@ void CNPC::Fire(float x,float y,float z)
 			cpy = ty;
 			// calc z fix
 			cpz = wd->cam_pos_fix[3] * (mz - z) + 1.0f;
+			// calc z angle
+			//SetCameraZAim(AngleBetweenVectors(cpx,cpy,1.0,cpx,cpy,cpz) * ((float)180.0f / M_PI));
+			SetCameraZAim(0.0f);
 			// calc cam pos
 			cpx += mx;
 			cpy += my;
@@ -294,12 +164,33 @@ void CNPC::Fire(float x,float y,float z)
 			// apply data
 			SetCameraPos(cpx,cpy,cpz);
 			SetCameraFrontVector(vx,vy,vz);
-			SetKeys(ud,lr,KEY_HANDBRAKE + KEY_FIRE);
 			SetCameraMode(7);
 			SetWeaponState(WEAPONSTATE_MORE_BULLETS);
 			break;
 		}
 	}
+}
+
+void CNPC::Aim(float x,float y,float z)
+{
+	// aim
+	Look(x,y,z);
+	// keys
+	unsigned short ud,lr,other;
+	// get my data
+	GetKeys(&ud,&lr,&other);
+	SetKeys(ud,lr,KEY_HANDBRAKE);
+}
+
+void CNPC::Fire(float x,float y,float z)
+{
+	// aim
+	Look(x,y,z);
+	// keys
+	unsigned short ud,lr,other;
+	// get my data
+	GetKeys(&ud,&lr,&other);
+	SetKeys(ud,lr,KEY_HANDBRAKE + KEY_FIRE);
 }
 
 bool CNPC::StartRecordingPlayback(char* name)

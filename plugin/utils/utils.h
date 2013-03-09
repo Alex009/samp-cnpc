@@ -34,4 +34,6 @@ int GetWeaponType(unsigned int weapon);
 void rotate_vector(float& x,float& y,float& z,float angle_xy,float angle_z);
 float scal_prod(float x1,float y1,float z1,float x2,float y2,float z2);
 void vect_prod(float x1,float y1,float z1,float x2,float y2,float z2,float* x3,float* y3,float* z3);
+float vector_len(float x,float y,float z);
 bool GetDistanceFromRayToPoint(float rsx,float rsy,float rsz,float rvx,float rvy,float rvz,float px,float py,float pz,float* result);
+float AngleBetweenVectors(float x1,float y1,float z1,float x2,float y2,float z2);
