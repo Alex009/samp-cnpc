@@ -97,13 +97,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCCore.cpp" />
-    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCDamage.cpp" />
-    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCMoving.cpp" />
-    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCPlayback.cpp" />
-    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\utils\md5.cpp" />
+    <ClCompile Include="CNPCCore.cpp" />
+    <ClCompile Include="CNPCDamage.cpp" />
+    <ClCompile Include="CNPCMoving.cpp" />
+    <ClCompile Include="CNPCPlayback.cpp" />
+    <ClCompile Include="utils\md5.cpp" />
     <ClCompile Include="demo_mode.cpp" />
-    <ClCompile Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\SWeaponData.cpp" />
+    <ClCompile Include="SWeaponData.cpp" />
     <ClCompile Include="CNodePath.cpp" />
     <ClCompile Include="path_calc.cpp" />
     <ClCompile Include="utils\time.cpp" />
@@ -123,13 +123,13 @@
     <ClCompile Include="utils\quaternion.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCCore.h" />
-    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCDamage.h" />
-    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCMoving.h" />
-    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\CNPCPlayback.h" />
-    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\demo_mode.h" />
-    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\SWeaponData.h" />
-    <ClInclude Include="..\..\..\..\009%27s files\bitbucket\controllable-npc\plugin\utils\md5.h" />
+    <ClInclude Include="CNPCCore.h" />
+    <ClInclude Include="CNPCDamage.h" />
+    <ClInclude Include="CNPCMoving.h" />
+    <ClInclude Include="CNPCPlayback.h" />
+    <ClInclude Include="demo_mode.h" />
+    <ClInclude Include="SWeaponData.h" />
+    <ClInclude Include="utils\md5.h" />
     <ClInclude Include="CNodePath.h" />
     <ClInclude Include="path_calc.h" />
     <ClInclude Include="utils\time.h" />

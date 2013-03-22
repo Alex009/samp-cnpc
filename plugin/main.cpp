@@ -75,8 +75,6 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData )
 		{
 			logprintf("md5 hash of your server is invalid, please check your " SAMP_SERVER_FILE);
 			logprintf("md5 should be %s, your server is %s ",SAMP_SERVER_MD5,str);
-			logprintf("================");
-			return false;
 		}
 	}
 	else logprintf("can't check md5 hash (maybe you have incorrect SA-MP server vesion), check your " SAMP_SERVER_FILE);
