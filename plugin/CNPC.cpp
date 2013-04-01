@@ -11,8 +11,10 @@
 #include "utils/utils.h"
 #include "SWeaponData.h"
 #include <math.h>
+#include "os.h"
 
 extern	CCallbacks*	pCallbacks;
+extern	CNPC*		pNPC[MAX_NPCS];
 
 CNPC::CNPC(unsigned short id,char* name): CNPCCore(id,name)
 {
@@ -23,13 +25,22 @@ CNPC::CNPC(unsigned short id,char* name): CNPCCore(id,name)
 
 CNPC::~CNPC()
 {
-	if(pMoving) delete pMoving;
+	if(pMoving) 
+	{
+		delete pMoving;
+		pMoving = NULL;
+	}
 	if(pPlayback) 
 	{
 		delete pPlayback;
+		pPlayback = NULL;
 		pCallbacks->PlaybackEnd(local_id,NPC_RECORD_END_REASON_DESTROY);
 	}
-	if(pDamage) delete pDamage;
+	if(pDamage) 
+	{
+		delete pDamage;
+		pDamage = NULL;
+	}
 }
 
 void CNPC::Spawn()
@@ -91,9 +102,7 @@ void CNPC::Stop()
 bool CNPC::Move(float x,float y,float z,float velocity,bool zmap,bool allaxisrotate)
 {
 	// check already exist destination
-	if(pMoving) delete pMoving;
-	// create moving
-	pMoving = new CNPCMoving(this);
+	if(!pMoving) pMoving = new CNPCMoving(this);
 	// try start moving
 	if(!pMoving->Move(x,y,z,velocity,zmap,allaxisrotate))
 	{
@@ -270,5 +279,5 @@ void CNPC::Update(double update_time)
 		pDamage->Update(update_time);
 	}
 
-	CNPCCore::Update(update_time);
+	if(pNPC[CNPCCore::local_id]) CNPCCore::Update(update_time);
 }

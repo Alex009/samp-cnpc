@@ -25,6 +25,7 @@
 #include "utils/time.h"
 #include "path_calc.h"
 #include "SWeaponData.h"
+#include "os.h"
 
 extern	CNPC*			pNPC[MAX_NPCS];
 extern	CNode*			pNodes[MAX_NODES];
@@ -34,6 +35,8 @@ extern	CZMap*			pZMap;
 extern	CSAMP*			pSaMp;
 extern	bool			VisualDeath;
 extern	unsigned short	MaxPlayers;
+
+extern MUTEX_IDENTIFY(threadmutex);
 
 unsigned char nm_count = 0;
 unsigned char zm_count = 0;
@@ -779,7 +782,7 @@ static cell AMX_NATIVE_CALL n_NPC_DriveTo( AMX* amx, cell* params )
 		float z = amx_ctof(params[4]);
 		float speed = amx_ctof(params[5]) / 100.f;
 		bool z_map = (params[6]==0?false:true);
-		if(pNPC[npcid]->Move(x,y,z,speed,z_map,false))
+		if(pNPC[npcid]->Move(x,y,z,speed,z_map,true))
 		{
 			pNPC[npcid]->SetKeys(KEY_UP,0,0);
 			pNPC[npcid]->SetState(PLAYER_STATE_DRIVER);

@@ -34,6 +34,11 @@
 #define PLAYER_RECORDING_TYPE_DRIVER			1
 #define PLAYER_RECORDING_TYPE_ONFOOT			2
 
+#define BODYPART_HEAD							1
+#define	BODYPART_TORSO							2
+#define BODYPART_FOOT							3
+#define BODYPART_ALL							4
+
 
 #define	NPC_RECORD_END_REASON_END				1
 #define	NPC_RECORD_END_REASON_DEATH				2

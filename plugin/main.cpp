@@ -22,6 +22,7 @@
 #include "utils/md5.h"
 #include <string.h>
 #include "demo_mode.h"
+#include "os.h"
 
 CNPC*			pNPC[MAX_NPCS];
 CNode*			pNodes[MAX_NODES];
