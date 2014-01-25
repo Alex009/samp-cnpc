@@ -20,9 +20,11 @@
 #include "natives.h"
 #include "defines.h"
 #include "utils/md5.h"
+#include "utils/time.h"
 #include <string.h>
 #include "demo_mode.h"
 #include "os.h"
+#include "path_calc.h"
 
 CNPC*			pNPC[MAX_NPCS];
 CNode*			pNodes[MAX_NODES];
@@ -44,7 +46,7 @@ float GetZCoord(float x,float y)
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports() 
 {
-	return SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES;
+	return SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES;// | SUPPORTS_PROCESS_TICK;
 }
 
 PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData ) 
@@ -68,6 +70,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData )
 	logprintf("Controllable NPC v " PLUGIN_VERSION);
 	logprintf("by 009");
 	logprintf("for SA-MP " SAMP_VERSION " server");
+	/*
 	// check samp server version
 	if(Curl_md5file((unsigned char*)output,SAMP_SERVER_FILE))
 	{
@@ -79,6 +82,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load( void **ppData )
 		}
 	}
 	else logprintf("can't check md5 hash (maybe you have incorrect SA-MP server vesion), check your " SAMP_SERVER_FILE);
+	*/
 	// null data
 	for(unsigned short i = 0;i < MAX_NPCS;i++) pNPC[i] = NULL;
 	for(unsigned short i = 0;i < MAX_NODES;i++) pNodes[i] = NULL;
@@ -132,4 +136,19 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxUnload( AMX *amx )
 {
 	pCallbacks->CallbacksOnAMXUnLoad(amx);
 	return AMX_ERR_NONE;
+}
+
+PLUGIN_EXPORT void PLUGIN_CALL ProcessTick() {
+	double time = microtime();
+	// обновл€ем данные о игроках дл€ определени€ урона
+	CNPCDamage::UpdatePlayersData(pSaMp->players,time);
+	// обновл€ем состо€ние NPC
+	for(unsigned short npcid = 0;npcid < MaxPlayers;npcid++)
+	{
+		if(pNPC[npcid]) pNPC[npcid]->Update(time);
+	}
+	// вызываем калбеки путей
+	CallPathCalculationCallback();
+	// сон
+	//SLEEP(5);
 }
